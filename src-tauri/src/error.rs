@@ -15,6 +15,7 @@ pub enum CommandError {
     TokenExpired,
 
     #[error("two-factor authentication required")]
+    #[serde(rename = "requires_2fa")]
     Requires2fa,
 
     #[error("invalid credentials")]

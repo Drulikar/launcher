@@ -87,7 +87,14 @@ async fn complete_login(
     expires_at: i64,
 ) -> CommandResult<AuthState> {
     TokenStorage::store_tokens(token, refresh_token, id_token, expires_at)?;
-    let user_info = fetch_user_info(token).await?;
+    tracing::debug!("Tokens stored, fetching user info");
+    let user_info = match fetch_user_info(token).await {
+        Ok(info) => info,
+        Err(e) => {
+            tracing::error!("Failed to fetch user info after login: {e:?}");
+            return Err(e);
+        }
+    };
     let auth_state = AuthState::logged_in(user_info);
     app.emit("auth-state-changed", &auth_state).ok();
     Ok(auth_state)
@@ -227,7 +234,14 @@ pub async fn hub_login(
 ) -> CommandResult<AuthState> {
     tracing::info!("Starting hub login for {}", username);
 
-    let result = HubClient::login(&username, &password, totp_code.as_deref()).await?;
+    let result = match HubClient::login(&username, &password, totp_code.as_deref()).await {
+        Ok(r) => r,
+        Err(e) => {
+            tracing::error!("Hub login request failed: {e:?}");
+            return Err(e.into());
+        }
+    };
+    tracing::info!("Hub login succeeded for {}, fetching profile", username);
     let expires_at = parse_hub_expiry(&result.expire_time);
 
     complete_login(&app, &result.token, None, "", expires_at).await
