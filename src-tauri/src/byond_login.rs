@@ -190,10 +190,6 @@ const MODAL_WIDTH: f64 = 520.0;
 #[cfg(not(target_os = "linux"))]
 const MODAL_HEIGHT: f64 = 440.0;
 #[cfg(not(target_os = "linux"))]
-const MAIN_WINDOW_WIDTH: f64 = 800.0;
-#[cfg(not(target_os = "linux"))]
-const MAIN_WINDOW_HEIGHT: f64 = 540.0;
-#[cfg(not(target_os = "linux"))]
 const TITLEBAR_HEIGHT: f64 = 41.0;
 #[cfg(not(target_os = "linux"))]
 const MODAL_PAD_TOP: f64 = 56.0;
@@ -403,8 +399,15 @@ fn create_login_webview(app: &AppHandle, data_dir: std::path::PathBuf) -> Comman
         true
     });
 
-    let modal_x = (MAIN_WINDOW_WIDTH - MODAL_WIDTH) / 2.0;
-    let modal_y = TITLEBAR_HEIGHT + (MAIN_WINDOW_HEIGHT - TITLEBAR_HEIGHT - MODAL_HEIGHT) / 2.0;
+    let window_size = main_window
+        .inner_size()
+        .map_err(|e| CommandError::Webview(format!("Failed to get window size: {e}")))?;
+    let scale = main_window.scale_factor().unwrap_or(1.0);
+    let win_w = window_size.width as f64 / scale;
+    let win_h = window_size.height as f64 / scale;
+
+    let modal_x = (win_w - MODAL_WIDTH) / 2.0;
+    let modal_y = TITLEBAR_HEIGHT + (win_h - TITLEBAR_HEIGHT - MODAL_HEIGHT) / 2.0;
     let x = modal_x + MODAL_PAD_SIDE;
     let y = modal_y + MODAL_PAD_TOP;
 

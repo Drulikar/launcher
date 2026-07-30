@@ -223,7 +223,7 @@ const AppContent = () => {
       <UpdateNotification />
       <ErrorNotifications errors={errors} onDismiss={dismissError} />
       <SettingsModal
-        visible={settingsVisible}
+        visible={settingsVisible && !byondLoginVisible}
         authMode={authMode}
         theme={theme}
         steamAvailable={steamAvailable}

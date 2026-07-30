@@ -1702,14 +1702,15 @@ p.settings-description-hint {
 
 .toggle-setting {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
   border: 1px solid var(--border);
   border-radius: 2px;
   background-color: rgba(255, 255, 255, 0.03);
   cursor: pointer;
   transition: var(--transition);
+  font-size: 14px;
 
   &:hover {
     background-color: var(--bg-highlight);
@@ -1726,7 +1727,6 @@ p.settings-description-hint {
     background-color: transparent;
     cursor: pointer;
     position: relative;
-    margin-top: 2px;
     transition: var(--transition);
 
     &:hover {
