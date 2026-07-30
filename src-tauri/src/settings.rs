@@ -79,6 +79,8 @@ pub struct AppSettings {
     pub whitelisted_servers: HashSet<String>,
     #[serde(default)]
     pub accepted_tos_servers: HashSet<String>,
+    #[serde(default)]
+    pub last_read_announcement: Option<String>,
 }
 
 fn default_true() -> bool {
@@ -131,6 +133,7 @@ impl Default for AppSettings {
             rich_presence_enabled: true,
             whitelisted_servers: HashSet::new(),
             accepted_tos_servers: HashSet::new(),
+            last_read_announcement: None,
         }
     }
 }
@@ -388,6 +391,18 @@ pub async fn save_filter_settings(
     settings.filter_regions = filters.regions.into_iter().collect();
     settings.filter_languages = filters.languages.into_iter().collect();
     settings.search_query = filters.search_query;
+    save_settings(&app, &settings)?;
+    Ok(settings)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn set_last_read_announcement(
+    app: AppHandle,
+    announcement_id: String,
+) -> CommandResult<AppSettings> {
+    let mut settings = load_settings(&app)?;
+    settings.last_read_announcement = Some(announcement_id);
     save_settings(&app, &settings)?;
     Ok(settings)
 }

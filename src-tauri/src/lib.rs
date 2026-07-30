@@ -48,9 +48,9 @@ use server_ping::get_server_pings;
 use servers::{get_announcements, get_servers};
 use settings::{
     get_settings, save_filter_settings, set_age_verified, set_auth_mode, set_last_played_server,
-    set_last_view_mode, set_locale, set_rendering_pipeline, set_rich_presence, set_theme,
-    set_accepted_tos_server, set_whitelisted_server, toggle_favorite_server,
-    toggle_server_notifications, trust_direct_connect_address,
+    set_last_read_announcement, set_last_view_mode, set_locale, set_rendering_pipeline,
+    set_rich_presence, set_theme, set_accepted_tos_server, set_whitelisted_server,
+    toggle_favorite_server, toggle_server_notifications, trust_direct_connect_address,
 };
 
 use singleplayer::{
@@ -200,6 +200,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         set_whitelisted_server,
         set_accepted_tos_server,
         save_filter_settings,
+        set_last_read_announcement,
         get_control_server_port,
         kill_game,
         get_servers,
@@ -269,6 +270,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         set_accepted_tos_server,
         trust_direct_connect_address,
         save_filter_settings,
+        set_last_read_announcement,
         get_control_server_port,
         kill_game,
         get_servers,

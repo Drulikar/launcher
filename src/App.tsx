@@ -25,6 +25,7 @@ import type { ViewMode } from "./components/ServerFilterPanel";
 import {
   AuthFlowProvider,
   ErrorProvider,
+  useAnnouncements,
   useAppBootstrap,
   useAutoConnect,
   useDeepLink,
@@ -120,6 +121,11 @@ const AppContent = () => {
   const handleViewModeChange = (mode: ViewMode) => {
     saveLastViewMode(mode);
   };
+
+  const announcements = useAnnouncements();
+  const lastReadAnnouncement = useSettingsStore((s) => s.lastReadAnnouncement);
+  const newsAnnouncements = announcements.filter((a) => a.kind === "announcement");
+  const hasUnreadNews = newsAnnouncements.length > 0 && newsAnnouncements[0].id !== lastReadAnnouncement;
 
   const filters = useServerFilters(servers, config);
   const { showHubStatus, filteredServers } = filters;
@@ -277,11 +283,12 @@ const AppContent = () => {
                 showHome={showHome}
                 onDirectConnect={config.features.direct_connect ? () => setDirectConnectVisible(true) : undefined}
                 hasEighteenPlus={servers.filter((s) => s.is_18_plus).length > 0}
+                hasUnreadNews={hasUnreadNews}
               />
             )}
-            <HubAnnouncements />
+            <HubAnnouncements announcements={announcements} />
             {viewMode === "news" ? (
-              <NewsPage />
+              <NewsPage announcements={announcements} />
             ) : viewMode === "singleplayer" && config?.features.singleplayer ? (
               <SinglePlayerPanel />
             ) : viewMode === "home" ? (

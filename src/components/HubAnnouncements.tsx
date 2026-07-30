@@ -1,28 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import Markdown from "react-markdown";
-import { commands, type HubAnnouncement } from "../bindings";
-import { listen } from "@tauri-apps/api/event";
+import type { HubAnnouncement } from "../bindings";
 
-export const HubAnnouncements = () => {
-  const [announcements, setAnnouncements] = useState<HubAnnouncement[]>([]);
+interface HubAnnouncementsProps {
+  announcements: HubAnnouncement[];
+}
+
+export const HubAnnouncements = ({ announcements }: HubAnnouncementsProps) => {
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
-
-  const fetchAnnouncements = useCallback(async () => {
-    const result = await commands.getAnnouncements();
-    if (result.status === "ok") {
-      setAnnouncements(result.data);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAnnouncements();
-    const unlisten = listen<HubAnnouncement[]>("announcements-updated", (event) => {
-      setAnnouncements(event.payload);
-    });
-    return () => {
-      unlisten.then((fn) => fn());
-    };
-  }, [fetchAnnouncements]);
 
   const toggleCollapse = (id: string) => {
     setCollapsedIds((prev) => {

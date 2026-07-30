@@ -2273,6 +2273,16 @@ p.settings-description-hint {
   font-size: 12px;
 }
 
+.unread-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #60a5fa;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 .hub-announcements {
   display: flex;
   flex-direction: column;

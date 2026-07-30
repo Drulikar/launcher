@@ -29,6 +29,7 @@ interface SettingsStore {
   whitelistedServers: Set<string>;
   acceptedTosServers: Set<string>;
   richPresenceEnabled: boolean;
+  lastReadAnnouncement: string | null;
   filters: StoredFilters;
 
   setAuthMode: (mode: AuthMode) => void;
@@ -52,6 +53,7 @@ interface SettingsStore {
   setAcceptedTos: (uuid: string, state: boolean) => Promise<void>;
   hasAcceptedTos: (uuid: string) => boolean;
   saveRichPresence: (enabled: boolean) => Promise<void>;
+  saveLastReadAnnouncement: (id: string) => Promise<void>;
   saveFilters: (filters: StoredFilters) => Promise<void>;
 }
 
@@ -69,6 +71,7 @@ export const useSettingsStore = create<SettingsStore>()((set, get) => ({
   favoriteServers: new Set<string>(),
   trustedAddresses: new Set<string>(),
   richPresenceEnabled: true,
+  lastReadAnnouncement: null,
   whitelistedServers: new Set<string>(),
   acceptedTosServers: new Set<string>(),
   filters: {
@@ -104,6 +107,7 @@ export const useSettingsStore = create<SettingsStore>()((set, get) => ({
         favoriteServers: new Set(settings.favorite_servers ?? []),
         trustedAddresses: new Set(settings.trusted_direct_connect_addresses ?? []),
         richPresenceEnabled: settings.rich_presence_enabled ?? true,
+        lastReadAnnouncement: settings.last_read_announcement ?? null,
         whitelistedServers: new Set(settings.whitelisted_servers ?? []),
         acceptedTosServers: new Set(settings.accepted_tos_servers ?? []),
         filters: {
@@ -210,6 +214,11 @@ export const useSettingsStore = create<SettingsStore>()((set, get) => ({
   saveRichPresence: async (enabled: boolean) => {
     unwrap(await commands.setRichPresence(enabled));
     set({ richPresenceEnabled: enabled });
+  },
+
+  saveLastReadAnnouncement: async (id: string) => {
+    unwrap(await commands.setLastReadAnnouncement(id));
+    set({ lastReadAnnouncement: id });
   },
 
   saveFilters: async (filters: StoredFilters) => {

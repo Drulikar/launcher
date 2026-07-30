@@ -1,36 +1,29 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
-import { commands, type HubAnnouncement } from "../bindings";
-import { listen } from "@tauri-apps/api/event";
+import type { HubAnnouncement } from "../bindings";
+import { useSettingsStore } from "../stores";
 
 function truncateBody(body: string, maxLines = 3): string {
   return body.split("\n").slice(0, maxLines).join("\n");
 }
 
-export const NewsPage = () => {
+interface NewsPageProps {
+  announcements: HubAnnouncement[];
+}
+
+export const NewsPage = ({ announcements }: NewsPageProps) => {
   const { t } = useTranslation();
-  const [announcements, setAnnouncements] = useState<HubAnnouncement[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const fetchAnnouncements = useCallback(async () => {
-    const result = await commands.getAnnouncements();
-    if (result.status === "ok") {
-      setAnnouncements(result.data);
-    }
-  }, []);
+  const news = announcements.filter((a) => a.kind === "announcement");
+  const saveLastRead = useSettingsStore((s) => s.saveLastReadAnnouncement);
 
   useEffect(() => {
-    fetchAnnouncements();
-    const unlisten = listen<HubAnnouncement[]>("announcements-updated", (event) => {
-      setAnnouncements(event.payload);
-    });
-    return () => {
-      unlisten.then((fn) => fn());
-    };
-  }, [fetchAnnouncements]);
-
-  const news = announcements.filter((a) => a.kind === "announcement");
+    if (news.length > 0) {
+      saveLastRead(news[0].id);
+    }
+  }, [news[0]?.id]);
 
   return (
     <div className="news-page">

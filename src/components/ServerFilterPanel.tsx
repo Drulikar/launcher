@@ -31,6 +31,7 @@ interface ServerFilterPanelProps {
   showHome: boolean;
   onDirectConnect?: () => void;
   hasEighteenPlus: boolean;
+  hasUnreadNews?: boolean;
 }
 
 export const ServerFilterPanel = ({
@@ -43,6 +44,7 @@ export const ServerFilterPanel = ({
   showHome,
   onDirectConnect,
   hasEighteenPlus,
+  hasUnreadNews,
 }: ServerFilterPanelProps) => {
   const {
     searchQuery,
@@ -137,6 +139,7 @@ export const ServerFilterPanel = ({
             onClick={() => onViewModeChange("news")}
           >
             {t("nav.news")}
+            {hasUnreadNews && <span className="unread-dot" />}
           </button>
           {features.direct_connect && onDirectConnect && (
             <button
