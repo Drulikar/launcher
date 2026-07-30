@@ -107,6 +107,14 @@ jobs:
         if: matrix.platform == 'ubuntu-24.04' && steps.cache-tauri-cli.outputs.cache-hit != 'true'
         run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch feat/truly-portable-appimage --force
 
+      - name: Pin quick-sharun.sh (Linux)
+        if: matrix.platform == 'ubuntu-24.04'
+        run: |
+          mkdir -p ~/.cache/tauri
+          curl -fsSL "https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/0131d579b5f5a1633fb6372de991428755f6a437/useful-tools/quick-sharun.sh" \
+            -o ~/.cache/tauri/quick-sharun.sh
+          chmod +x ~/.cache/tauri/quick-sharun.sh
+
       - uses: tauri-apps/tauri-action@v0.6.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -263,6 +271,14 @@ jobs:
       - name: Install custom tauri-cli (Linux)
         if: matrix.platform == 'ubuntu-24.04' && steps.cache-tauri-cli.outputs.cache-hit != 'true'
         run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch feat/truly-portable-appimage --force
+
+      - name: Pin quick-sharun.sh (Linux)
+        if: matrix.platform == 'ubuntu-24.04'
+        run: |
+          mkdir -p ~/.cache/tauri
+          curl -fsSL "https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/0131d579b5f5a1633fb6372de991428755f6a437/useful-tools/quick-sharun.sh" \
+            -o ~/.cache/tauri/quick-sharun.sh
+          chmod +x ~/.cache/tauri/quick-sharun.sh
 
       - uses: tauri-apps/tauri-action@v0.6.1
         env:
