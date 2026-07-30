@@ -301,6 +301,14 @@ async getServers() : Promise<Result<Server[], CommandError>> {
     else return { status: "error", error: e  as any };
 }
 },
+async getAnnouncements() : Promise<Result<HubAnnouncement[], CommandError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_announcements") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getServerPings() : Promise<Result<Partial<{ [key in string]: number | null }>, CommandError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_server_pings") };
@@ -554,6 +562,7 @@ export type DirectConnectInfo = { hostname: string; port: number; server_id: str
 export type DirectConnectTrust = "HubVerified" | "HubKnown" | "DomainAttested" | "SelfReported" | "ByondOnly" | "Unreachable"
 export type EngineRequirements = { min_version?: string | null; max_version?: string | null; blacklisted_versions?: string[] }
 export type FilterSettings = { tags: string[]; show_18_plus: boolean; show_offline: boolean | null; show_hub_status: boolean; regions: string[]; languages: string[]; search_query: string | null }
+export type HubAnnouncement = { id: string; title: string; body: string; kind: string; active_until?: string | null; active_from: string }
 export type LauncherConfig = { variant: string; product_name: string; logo: string; default_theme: string; app_identifier: string; default_byond_version: string | null; server_api: ServerApiType; features: LauncherFeatures; urls: LauncherUrls; strings: LauncherStrings; singleplayer: SingleplayerConfig; oidc: OidcConfig | null; social_links: SocialLink[] }
 export type LauncherFeatures = { relay_selector: boolean; singleplayer: boolean; server_search: boolean; server_filters: boolean; show_offline_servers: boolean; server_stats: boolean; auto_launch_byond: boolean; connection_timeout_fallback: boolean; connect_logo: boolean; favorites: boolean; direct_connect: boolean; control_server_key: boolean }
 export type LauncherStrings = { auth_provider_name: string; login_prompt: string; discord_game_name: string }

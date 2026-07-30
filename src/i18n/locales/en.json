@@ -152,7 +152,13 @@
   },
   "nav": {
     "home": "Home",
-    "browse": "Browse"
+    "browse": "Browse",
+    "news": "News"
+  },
+  "news": {
+    "empty": "No announcements at this time.",
+    "readMore": "Read more",
+    "showLess": "Show less"
   },
   "home": {
     "continuePlaying": "Continue Playing",

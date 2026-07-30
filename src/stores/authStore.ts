@@ -41,7 +41,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
       const providers = unwrap(await commands.getHubOauthProviders());
       set({ oauthProviders: providers.filter((p) => p !== "steam") });
     } catch {
-      // Non-fatal — leave providers empty
+      // Non-fatal - leave providers empty
     }
   },
 

@@ -7,6 +7,8 @@ export { ErrorNotifications } from "./ErrorNotifications";
 export type { GameConnectionState } from "./GameConnectionModal";
 export { GameConnectionModal } from "./GameConnectionModal";
 export { HomePage } from "./HomePage";
+export { HubAnnouncements } from "./HubAnnouncements";
+export { NewsPage } from "./NewsPage";
 export { Modal, ModalContent, ModalSpinner } from "./Modal";
 export { RelayDropdown } from "./RelayDropdown";
 export { ServerFilterPanel } from "./ServerFilterPanel";

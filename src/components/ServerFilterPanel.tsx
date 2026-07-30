@@ -19,7 +19,7 @@ import { AgeVerificationModal } from "./AgeVerificationModal";
 
 type FilterState = ReturnType<typeof useServerFilters>;
 
-export type ViewMode = "home" | "browse" | "singleplayer";
+export type ViewMode = "home" | "browse" | "singleplayer" | "news";
 
 interface ServerFilterPanelProps {
   features: LauncherFeatures;
@@ -131,6 +131,13 @@ export const ServerFilterPanel = ({
               {t("servers.singleplayer")}
             </button>
           )}
+          <button
+            type="button"
+            className={`view-tab${viewMode === "news" ? " active" : ""}`}
+            onClick={() => onViewModeChange("news")}
+          >
+            {t("nav.news")}
+          </button>
           {features.direct_connect && onDirectConnect && (
             <button
               type="button"

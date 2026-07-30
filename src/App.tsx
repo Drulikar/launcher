@@ -9,6 +9,8 @@ import {
   ErrorNotifications,
   GameConnectionModal,
   HomePage,
+  HubAnnouncements,
+  NewsPage,
   RelayDropdown,
   ServerFilterPanel,
   ServerItem,
@@ -277,7 +279,10 @@ const AppContent = () => {
                 hasEighteenPlus={servers.filter((s) => s.is_18_plus).length > 0}
               />
             )}
-            {viewMode === "singleplayer" && config?.features.singleplayer ? (
+            <HubAnnouncements />
+            {viewMode === "news" ? (
+              <NewsPage />
+            ) : viewMode === "singleplayer" && config?.features.singleplayer ? (
               <SinglePlayerPanel />
             ) : viewMode === "home" ? (
               <HomePage servers={servers} />

@@ -131,7 +131,7 @@ Linux builds require bundled sidecars (Wine, WebView2, cabextract) for running B
 3. Prepare the sidecar directory for AppImage bundling. The directory name must match the `productName` in tauri.conf.json:
 
    ```bash
-   # For SS13 (generic) — productName is "SS13 Launcher"
+   # For SS13 (generic) - productName is "SS13 Launcher"
    mkdir -p "/tmp/lib/SS13 Launcher"
    cp src-tauri/wine.tar.zst "/tmp/lib/SS13 Launcher/"
    cp src-tauri/winetricks "/tmp/lib/SS13 Launcher/"
@@ -139,7 +139,7 @@ Linux builds require bundled sidecars (Wine, WebView2, cabextract) for running B
    chmod +x "/tmp/lib/SS13 Launcher/winetricks" "/tmp/lib/SS13 Launcher/cabextract"
    cp -r src-tauri/webview2-runtime "/tmp/lib/SS13 Launcher/webview2-runtime"
 
-   # For CM-SS13 — productName is "CM-SS13 Launcher"
+   # For CM-SS13 - productName is "CM-SS13 Launcher"
    mkdir -p "/tmp/lib/CM-SS13 Launcher"
    cp src-tauri/wine.tar.zst "/tmp/lib/CM-SS13 Launcher/"
    cp src-tauri/winetricks "/tmp/lib/CM-SS13 Launcher/"

@@ -200,7 +200,7 @@ pub fn cleanup_old_versions(app: &AppHandle) {
                 .map(|t| t < cutoff)
                 .unwrap_or(true),
             None => {
-                // Never used — check installed_at instead
+                // Never used - check installed_at instead
                 chrono::DateTime::parse_from_rfc3339(&entry.installed_at)
                     .map(|t| t < cutoff)
                     .unwrap_or(true)
@@ -381,7 +381,7 @@ pub fn select_byond_version(
         return Ok((*best).clone());
     }
 
-    // No valid installed version — determine what to download
+    // No valid installed version - determine what to download
     if let Some(ref max) = engine.max_version {
         // If max is set (whether or not min is set), download max
         if !engine.blacklisted_versions.contains(max) {

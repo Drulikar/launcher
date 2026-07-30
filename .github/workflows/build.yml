@@ -128,6 +128,43 @@ jobs:
           build_name: ${{ github.ref_name }}-cm
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build portable Linux tarball
+        if: matrix.platform == 'ubuntu-24.04'
+        run: |
+          APPIMAGE=$(find src-tauri/target/release/bundle -name "*.AppImage" | head -1)
+          chmod +x "$APPIMAGE"
+          "$APPIMAGE" --appimage-extract
+
+          mkdir -p portable-linux
+          cp -r AppDir/* portable-linux/
+          rm -rf portable-linux/share/terminfo
+
+          cp -r src-tauri/webview2-runtime portable-linux/webview2-runtime
+
+          # Patch WebKit helper binaries to use bundled ld-linux and libraries
+          _tmp_lib=$(grep '_tmp_lib=' portable-linux/bin/01-path-mapping-hardcoded.hook | cut -d'=' -f2 | tr -d '"')
+          for f in portable-linux/lib/webkit2gtk-4.1/*; do
+            [ -f "$f" ] && file "$f" | grep -q ELF || continue
+            patchelf --force-rpath --set-rpath '$ORIGIN/..' --set-interpreter "/tmp/${_tmp_lib}/ld-linux-x86-64.so.2" "$f"
+          done
+
+          cp scripts/launch.sh portable-linux/launch.sh
+          cp scripts/install.sh portable-linux/install.sh
+          chmod +x portable-linux/launch.sh portable-linux/install.sh
+
+          VERSION=$(grep -oP '^version = "\K[^"]+' src-tauri/Cargo.toml)
+          ARCHIVE_NAME="cm-ss13-launcher_${VERSION}_linux-x86_64.tar.zst"
+          tar -C portable-linux -cf - . | zstd -19 -o "$ARCHIVE_NAME"
+          echo "LINUX_ARCHIVE=$ARCHIVE_NAME" >> "$GITHUB_ENV"
+
+      - name: Upload portable Linux tarball to release
+        if: matrix.platform == 'ubuntu-24.04' && startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          gh release upload "$TAG" "$LINUX_ARCHIVE" --clobber
+
   build-ss13:
     name: Build SS13 Launcher
     permissions:
@@ -251,3 +288,40 @@ jobs:
           exe_path: src-tauri/target/release/SS13_Launcher.exe
           build_name: ${{ github.ref_name }}-ss13
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build portable Linux tarball
+        if: matrix.platform == 'ubuntu-24.04'
+        run: |
+          APPIMAGE=$(find src-tauri/target/release/bundle -name "*.AppImage" | head -1)
+          chmod +x "$APPIMAGE"
+          "$APPIMAGE" --appimage-extract
+
+          mkdir -p portable-linux
+          cp -r AppDir/* portable-linux/
+          rm -rf portable-linux/share/terminfo
+
+          cp -r src-tauri/webview2-runtime portable-linux/webview2-runtime
+
+          # Patch WebKit helper binaries to use bundled ld-linux and libraries
+          _tmp_lib=$(grep '_tmp_lib=' portable-linux/bin/01-path-mapping-hardcoded.hook | cut -d'=' -f2 | tr -d '"')
+          for f in portable-linux/lib/webkit2gtk-4.1/*; do
+            [ -f "$f" ] && file "$f" | grep -q ELF || continue
+            patchelf --force-rpath --set-rpath '$ORIGIN/..' --set-interpreter "/tmp/${_tmp_lib}/ld-linux-x86-64.so.2" "$f"
+          done
+
+          cp scripts/launch.sh portable-linux/launch.sh
+          cp scripts/install.sh portable-linux/install.sh
+          chmod +x portable-linux/launch.sh portable-linux/install.sh
+
+          VERSION=$(grep -oP '^version = "\K[^"]+' src-tauri/Cargo.toml)
+          ARCHIVE_NAME="ss13-launcher_${VERSION}_linux-x86_64.tar.zst"
+          tar -C portable-linux -cf - . | zstd -19 -o "$ARCHIVE_NAME"
+          echo "LINUX_ARCHIVE=$ARCHIVE_NAME" >> "$GITHUB_ENV"
+
+      - name: Upload portable Linux tarball to release
+        if: matrix.platform == 'ubuntu-24.04' && startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          gh release upload "$TAG" "$LINUX_ARCHIVE" --clobber

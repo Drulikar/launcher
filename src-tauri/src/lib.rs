@@ -45,7 +45,7 @@ use byond_login::{
 };
 use relays::{get_relays, get_selected_relay, set_selected_relay};
 use server_ping::get_server_pings;
-use servers::get_servers;
+use servers::{get_announcements, get_servers};
 use settings::{
     get_settings, save_filter_settings, set_age_verified, set_auth_mode, set_last_played_server,
     set_last_view_mode, set_locale, set_rendering_pipeline, set_rich_presence, set_theme,
@@ -203,6 +203,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         get_control_server_port,
         kill_game,
         get_servers,
+        get_announcements,
         get_server_pings,
         get_relays,
         get_selected_relay,
@@ -271,6 +272,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         get_control_server_port,
         kill_game,
         get_servers,
+        get_announcements,
         get_server_pings,
         get_relays,
         get_selected_relay,
@@ -429,6 +431,7 @@ pub fn run() {
 
     let presence_manager = std::sync::Arc::new(manager);
     let server_state = std::sync::Arc::new(servers::ServerState::new());
+    let announcement_state = std::sync::Arc::new(servers::AnnouncementState::new());
     let relay_state = std::sync::Arc::new(relays::RelayState::new());
     let server_ping_state = std::sync::Arc::new(server_ping::ServerPingState::new());
 
@@ -437,6 +440,7 @@ pub fn run() {
     builder = builder
         .manage(std::sync::Arc::clone(&presence_manager))
         .manage(std::sync::Arc::clone(&server_state))
+        .manage(std::sync::Arc::clone(&announcement_state))
         .manage(std::sync::Arc::clone(&relay_state))
         .manage(std::sync::Arc::clone(&server_ping_state))
         .manage(byond_session_state);
@@ -496,6 +500,19 @@ pub fn run() {
                     handle_for_server_task,
                     server_state,
                     ping_state,
+                )
+                .await;
+            });
+
+            let announcement_state = std::sync::Arc::clone(
+                app.state::<std::sync::Arc<servers::AnnouncementState>>()
+                    .inner(),
+            );
+            let handle_for_announcements = handle.clone();
+            tauri::async_runtime::spawn(async move {
+                servers::announcement_fetch_background_task(
+                    handle_for_announcements,
+                    announcement_state,
                 )
                 .await;
             });

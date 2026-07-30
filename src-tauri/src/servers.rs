@@ -10,6 +10,7 @@ use tauri_plugin_notification::NotificationExt;
 use tokio::sync::RwLock;
 
 const SERVER_FETCH_INTERVAL_SECS: u64 = 20;
+const ANNOUNCEMENT_FETCH_INTERVAL_SECS: u64 = 120;
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 pub struct ServerData {
@@ -596,4 +597,78 @@ async fn check_and_send_notifications(
             }
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
+pub struct HubAnnouncement {
+    pub id: String,
+    pub title: String,
+    pub body: String,
+    pub kind: String,
+    #[serde(default)]
+    pub active_until: Option<String>,
+    pub active_from: String,
+}
+
+#[derive(Debug)]
+pub struct AnnouncementState {
+    pub announcements: RwLock<Vec<HubAnnouncement>>,
+}
+
+impl AnnouncementState {
+    pub fn new() -> Self {
+        Self {
+            announcements: RwLock::new(Vec::new()),
+        }
+    }
+}
+
+async fn fetch_announcements_internal() -> CommandResult<Vec<HubAnnouncement>> {
+    let config = get_config();
+    let hub_api = match std::env::var("SS13LAUNCHER_HUBAPI") {
+        Ok(url) => url,
+        Err(_) => config.urls.hub_api.ok_or_else(|| CommandError::NotConfigured {
+            feature: "hub_api".into(),
+        })?.to_string(),
+    };
+    let url = format!("{}/announcements", hub_api.trim_end_matches('/'));
+    tracing::info!("Fetching announcements from {}", url);
+    let response = reqwest::get(&url).await?;
+    if !response.status().is_success() {
+        return Err(CommandError::InvalidResponse(format!(
+            "Announcements HTTP error: {}",
+            response.status()
+        )));
+    }
+    let announcements: Vec<HubAnnouncement> = response.json().await.map_err(|e| {
+        CommandError::InvalidResponse(format!("Failed to parse announcements: {}", e))
+    })?;
+    tracing::info!("Fetched {} announcements", announcements.len());
+    Ok(announcements)
+}
+
+pub async fn announcement_fetch_background_task(
+    handle: AppHandle,
+    state: Arc<AnnouncementState>,
+) {
+    loop {
+        match fetch_announcements_internal().await {
+            Ok(announcements) => {
+                *state.announcements.write().await = announcements.clone();
+                let _ = handle.emit("announcements-updated", &announcements);
+            }
+            Err(e) => {
+                tracing::warn!("Announcement fetch failed: {}", e);
+            }
+        }
+        tokio::time::sleep(Duration::from_secs(ANNOUNCEMENT_FETCH_INTERVAL_SECS)).await;
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn get_announcements(
+    state: tauri::State<'_, Arc<AnnouncementState>>,
+) -> CommandResult<Vec<HubAnnouncement>> {
+    Ok(state.announcements.read().await.clone())
 }
