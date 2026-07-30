@@ -10,6 +10,8 @@ use crate::error::{CommandError, CommandResult};
 
 use super::hub_client::HubClient;
 
+static PENDING_2FA_CODE: tokio::sync::Mutex<Option<String>> = tokio::sync::Mutex::const_new(None);
+
 impl From<HubAuthError> for CommandError {
     fn from(e: HubAuthError) -> Self {
         match e {
@@ -297,10 +299,17 @@ pub async fn hub_oauth_login(app: AppHandle, provider: String) -> CommandResult<
 
     tracing::info!("OAuth callback received, exchanging code");
 
-    let result = HubClient::oauth_exchange(&callback_result.code).await?;
-    let expires_at = parse_hub_expiry(&result.expire_time);
-
-    complete_login(&app, &result.token, None, "", expires_at).await
+    match HubClient::oauth_exchange(&callback_result.code, None, None).await {
+        Ok(result) => {
+            let expires_at = parse_hub_expiry(&result.expire_time);
+            complete_login(&app, &result.token, None, "", expires_at).await
+        }
+        Err(HubAuthError::Requires2FA) => {
+            *PENDING_2FA_CODE.lock().await = Some(callback_result.code);
+            Err(CommandError::Requires2fa)
+        }
+        Err(e) => Err(e.into()),
+    }
 }
 
 #[cfg(feature = "steam")]
@@ -362,6 +371,13 @@ pub async fn hub_steam_login(
         return Err(CommandError::Network(error.to_string()));
     }
 
+    if body["requires_2fa"].as_bool() == Some(true) {
+        if let Some(code) = body["pending_2fa_code"].as_str() {
+            *PENDING_2FA_CODE.lock().await = Some(code.to_string());
+        }
+        return Err(CommandError::Requires2fa);
+    }
+
     let token = body["access_token"]
         .as_str()
         .ok_or_else(|| CommandError::InvalidResponse("missing access_token in response".into()))?;
@@ -369,6 +385,29 @@ pub async fn hub_steam_login(
     let expires_at = chrono::Utc::now().timestamp() + 86400 * 30;
 
     complete_login(&app, token, None, "", expires_at).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn hub_complete_2fa(app: AppHandle, totp_code: String) -> CommandResult<AuthState> {
+    let code = PENDING_2FA_CODE
+        .lock()
+        .await
+        .take()
+        .ok_or_else(|| CommandError::InvalidInput("no pending 2FA exchange".into()))?;
+
+    let result = HubClient::oauth_exchange(&code, Some(&totp_code), None)
+        .await
+        .map_err(|e| {
+            let code_clone = code.clone();
+            tokio::spawn(async move {
+                *PENDING_2FA_CODE.lock().await = Some(code_clone);
+            });
+            CommandError::from(e)
+        })?;
+
+    let expires_at = parse_hub_expiry(&result.expire_time);
+    complete_login(&app, &result.token, None, "", expires_at).await
 }
 
 async fn refresh_tokens_internal(token: &str) -> CommandResult<AuthState> {

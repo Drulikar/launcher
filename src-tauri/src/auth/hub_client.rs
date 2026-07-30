@@ -40,6 +40,16 @@ struct Requires2FAResponse {
     requires_2fa: Option<bool>,
 }
 
+#[derive(Deserialize)]
+struct OAuthExchangeResponse {
+    token: Option<String>,
+    expire_time: Option<String>,
+    user_id: Option<String>,
+    username: Option<String>,
+    #[serde(default)]
+    requires_2fa: bool,
+}
+
 impl HubClient {
     pub fn new(base_url: &str) -> Self {
         Self {
@@ -224,29 +234,64 @@ impl HubClient {
     }
 
     /// Exchange an OAuth login code for a session token.
-    pub async fn oauth_exchange(code: &str) -> Result<LoginResponse, HubAuthError> {
+    pub async fn oauth_exchange(
+        code: &str,
+        totp_code: Option<&str>,
+        recovery_code: Option<&str>,
+    ) -> Result<LoginResponse, HubAuthError> {
         let client = Self::from_config()?;
+
+        let mut body = serde_json::json!({ "code": code });
+        if let Some(totp) = totp_code {
+            body["totp_code"] = serde_json::Value::String(totp.to_string());
+        }
+        if let Some(recovery) = recovery_code {
+            body["recovery_code"] = serde_json::Value::String(recovery.to_string());
+        }
 
         let response = client
             .http
             .post(format!("{}/auth/oauth/exchange", client.base_url))
-            .json(&serde_json::json!({ "code": code }))
+            .json(&body)
             .send()
             .await
             .map_err(|e| HubAuthError::Network(format!("Failed to connect: {e}")))?;
 
-        if !response.status().is_success() {
-            let body = response.text().await.unwrap_or_default();
-            let message = serde_json::from_str::<ErrorResponse>(&body)
-                .map(|e| e.error)
-                .unwrap_or_else(|_| "OAuth exchange failed".to_string());
-            return Err(HubAuthError::Server(message));
+        let status = response.status();
+
+        if status.is_success() {
+            let exchange: OAuthExchangeResponse = response
+                .json()
+                .await
+                .map_err(|e| HubAuthError::Network(format!("Invalid response: {e}")))?;
+
+            if exchange.requires_2fa {
+                return Err(HubAuthError::Requires2FA);
+            }
+
+            return Ok(LoginResponse {
+                token: exchange.token.unwrap_or_default(),
+                expire_time: exchange.expire_time.unwrap_or_default(),
+                user_id: exchange.user_id.unwrap_or_default(),
+                username: exchange.username.unwrap_or_default(),
+            });
         }
 
-        response
-            .json::<LoginResponse>()
-            .await
-            .map_err(|e| HubAuthError::Network(format!("Invalid response: {e}")))
+        if status == reqwest::StatusCode::UNAUTHORIZED {
+            let body_text = response.text().await.unwrap_or_default();
+            if let Ok(r) = serde_json::from_str::<Requires2FAResponse>(&body_text) {
+                if r.requires_2fa == Some(true) {
+                    return Err(HubAuthError::Requires2FA);
+                }
+            }
+            return Err(HubAuthError::InvalidCredentials);
+        }
+
+        let body_text = response.text().await.unwrap_or_default();
+        let message = serde_json::from_str::<ErrorResponse>(&body_text)
+            .map(|e| e.error)
+            .unwrap_or_else(|_| "OAuth exchange failed".to_string());
+        Err(HubAuthError::Server(message))
     }
 
     /// Fetch the hub's public config (e.g. available OAuth providers).

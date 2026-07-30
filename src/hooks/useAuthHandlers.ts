@@ -16,12 +16,13 @@ const CLOSED: AuthModalView = { visible: false, state: "idle", error: undefined 
 
 export function useAuthHandlers() {
   const { showError } = useError();
-  const { login, hubLogin, hubOAuthLogin, hubSteamLogin, logout } = useAuthStore(
+  const { login, hubLogin, hubOAuthLogin, hubSteamLogin, hubComplete2fa, logout } = useAuthStore(
     useShallow((s) => ({
       login: s.login,
       hubLogin: s.hubLogin,
       hubOAuthLogin: s.hubOAuthLogin,
       hubSteamLogin: s.hubSteamLogin,
+      hubComplete2fa: s.hubComplete2fa,
       logout: s.logout,
     })),
   );
@@ -74,10 +75,50 @@ export function useAuthHandlers() {
     }
   }, [showError, setLoggingOut]);
 
+  const [pendingPasswordLogin, setPendingPasswordLogin] = useState<{ username: string; password: string } | null>(null);
+
   const handleHubLogin = useCallback(
     async (username: string, password: string, totpCode?: string) => {
       setAuthModal({ visible: true, state: "loading", error: undefined });
-      const result = await hubLogin(username, password, totpCode);
+
+      if (totpCode && pendingPasswordLogin) {
+        const result = await hubLogin(pendingPasswordLogin.username, pendingPasswordLogin.password, totpCode);
+        if (result.success) {
+          setPendingPasswordLogin(null);
+          setAuthModal(CLOSED);
+        } else {
+          setAuthModal({ visible: true, state: "2fa", error: result.error });
+        }
+        return;
+      }
+
+      if (totpCode && !pendingPasswordLogin) {
+        const result = await hubComplete2fa(totpCode);
+        if (result.success) {
+          setAuthModal(CLOSED);
+        } else {
+          setAuthModal({ visible: true, state: "2fa", error: result.error });
+        }
+        return;
+      }
+
+      const result = await hubLogin(username, password);
+      if (result.success) {
+        setAuthModal(CLOSED);
+      } else if (result.requires2fa) {
+        setPendingPasswordLogin({ username, password });
+        setAuthModal({ visible: true, state: "2fa", error: undefined });
+      } else {
+        setAuthModal({ visible: true, state: "error", error: result.error });
+      }
+    },
+    [hubLogin, hubComplete2fa, pendingPasswordLogin],
+  );
+
+  const handleOAuthLogin = useCallback(
+    async (provider: string) => {
+      setAuthModal({ visible: true, state: "loading", error: undefined });
+      const result = await hubOAuthLogin(provider);
       if (result.success) {
         setAuthModal(CLOSED);
       } else if (result.requires2fa) {
@@ -86,30 +127,19 @@ export function useAuthHandlers() {
         setAuthModal({ visible: true, state: "error", error: result.error });
       }
     },
-    [hubLogin],
-  );
-
-  const handleOAuthLogin = useCallback(
-    async (provider: string) => {
-      setAuthModal({ visible: true, state: "loading", error: undefined });
-      const result = await hubOAuthLogin(provider);
-      setAuthModal(
-        result.success
-          ? CLOSED
-          : { visible: true, state: "error", error: result.error },
-      );
-    },
     [hubOAuthLogin],
   );
 
   const handleSteamLogin = useCallback(async () => {
     setAuthModal({ visible: true, state: "loading", error: undefined });
     const result = await hubSteamLogin();
-    setAuthModal(
-      result.success
-        ? CLOSED
-        : { visible: true, state: "error", error: result.error },
-    );
+    if (result.success) {
+      setAuthModal(CLOSED);
+    } else if (result.requires2fa) {
+      setAuthModal({ visible: true, state: "2fa", error: undefined });
+    } else {
+      setAuthModal({ visible: true, state: "error", error: result.error });
+    }
   }, [hubSteamLogin]);
 
   const handleAuthModalClose = useCallback(() => setAuthModal(CLOSED), []);

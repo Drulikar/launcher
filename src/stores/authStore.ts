@@ -16,8 +16,11 @@ interface AuthStore {
   ) => Promise<{ success: boolean; error?: string; requires2fa?: boolean }>;
   hubOAuthLogin: (
     provider: string,
+  ) => Promise<{ success: boolean; error?: string; requires2fa?: boolean }>;
+  hubSteamLogin: () => Promise<{ success: boolean; error?: string; requires2fa?: boolean }>;
+  hubComplete2fa: (
+    totpCode: string,
   ) => Promise<{ success: boolean; error?: string }>;
-  hubSteamLogin: () => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   initListener: () => Promise<() => void>;
   loadOauthProviders: () => Promise<void>;
@@ -69,25 +72,36 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   },
 
   hubOAuthLogin: async (provider) => {
-    try {
-      const state = unwrap(await commands.hubOauthLogin(provider));
-      set({ authState: state });
-      return { success: state.logged_in };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : String(err);
-      return { success: false, error };
+    const r = await commands.hubOauthLogin(provider);
+    if (r.status === "ok") {
+      set({ authState: r.data });
+      return { success: r.data.logged_in };
     }
+    if (r.error.type === "requires_2fa") {
+      return { success: false, requires2fa: true };
+    }
+    return { success: false, error: formatCommandError(r.error) };
   },
 
   hubSteamLogin: async () => {
-    try {
-      const state = unwrap(await commands.hubSteamLogin());
-      set({ authState: state });
-      return { success: state.logged_in };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : String(err);
-      return { success: false, error };
+    const r = await commands.hubSteamLogin();
+    if (r.status === "ok") {
+      set({ authState: r.data });
+      return { success: r.data.logged_in };
     }
+    if (r.error.type === "requires_2fa") {
+      return { success: false, requires2fa: true };
+    }
+    return { success: false, error: formatCommandError(r.error) };
+  },
+
+  hubComplete2fa: async (totpCode) => {
+    const r = await commands.hubComplete2fa(totpCode);
+    if (r.status === "ok") {
+      set({ authState: r.data });
+      return { success: r.data.logged_in };
+    }
+    return { success: false, error: formatCommandError(r.error) };
   },
 
   logout: async () => {

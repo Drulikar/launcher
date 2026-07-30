@@ -119,6 +119,14 @@ async hubOauthLogin(provider: string) : Promise<Result<AuthState, CommandError>>
     else return { status: "error", error: e  as any };
 }
 },
+async hubComplete2fa(totpCode: string) : Promise<Result<AuthState, CommandError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("hub_complete_2fa", { totpCode }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async hubSteamLogin() : Promise<Result<AuthState, CommandError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("hub_steam_login") };
