@@ -220,10 +220,8 @@ impl CallbackServer {
 
             let state = params
                 .get("state")
-                .ok_or_else(|| {
-                    CommandError::InvalidResponse("Missing state in callback".to_string())
-                })?
-                .clone();
+                .cloned()
+                .unwrap_or_default();
 
             if let Some(ref expected) = self.expected_state {
                 if &state != expected {
