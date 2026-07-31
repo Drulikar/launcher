@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import type { LauncherConfig, Server } from "../bindings";
 import { useSettingsStore, type StoredFilters } from "../stores/settingsStore";
 
@@ -17,25 +18,40 @@ export function useServerFilters(servers: Server[], config: LauncherConfig | nul
   const selectedRegions = filters.regions;
   const selectedLanguages = filters.languages;
 
-  const updateFilters = useCallback((patch: Partial<StoredFilters>) => {
-    saveFilters({ ...filters, ...patch });
-  }, [filters, saveFilters]);
+  const updateFilters = useCallback(
+    (patch: Partial<StoredFilters>) => {
+      saveFilters({ ...filters, ...patch });
+    },
+    [filters, saveFilters],
+  );
 
-  const setShow18Plus = useCallback((value: boolean) => {
-    updateFilters({ show18Plus: value });
-  }, [updateFilters]);
+  const setShow18Plus = useCallback(
+    (value: boolean) => {
+      updateFilters({ show18Plus: value });
+    },
+    [updateFilters],
+  );
 
-  const setShowOffline = useCallback((value: boolean) => {
-    updateFilters({ showOffline: value });
-  }, [updateFilters]);
+  const setShowOffline = useCallback(
+    (value: boolean) => {
+      updateFilters({ showOffline: value });
+    },
+    [updateFilters],
+  );
 
-  const setSearchQuery = useCallback((value: string) => {
-    updateFilters({ searchQuery: value });
-  }, [updateFilters]);
+  const setSearchQuery = useCallback(
+    (value: string) => {
+      updateFilters({ searchQuery: value });
+    },
+    [updateFilters],
+  );
 
-  const setShowHubStatus = useCallback((value: boolean) => {
-    updateFilters({ showHubStatus: value });
-  }, [updateFilters]);
+  const setShowHubStatus = useCallback(
+    (value: boolean) => {
+      updateFilters({ showHubStatus: value });
+    },
+    [updateFilters],
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -47,26 +63,35 @@ export function useServerFilters(servers: Server[], config: LauncherConfig | nul
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleTag = useCallback((tag: string, on: boolean) => {
-    const next = new Set(filters.tags);
-    if (on) next.add(tag);
-    else next.delete(tag);
-    saveFilters({ ...filters, tags: next });
-  }, [filters, saveFilters]);
+  const toggleTag = useCallback(
+    (tag: string, on: boolean) => {
+      const next = new Set(filters.tags);
+      if (on) next.add(tag);
+      else next.delete(tag);
+      saveFilters({ ...filters, tags: next });
+    },
+    [filters, saveFilters],
+  );
 
-  const toggleRegion = useCallback((region: string, on: boolean) => {
-    const next = new Set(filters.regions);
-    if (on) next.add(region);
-    else next.delete(region);
-    saveFilters({ ...filters, regions: next });
-  }, [filters, saveFilters]);
+  const toggleRegion = useCallback(
+    (region: string, on: boolean) => {
+      const next = new Set(filters.regions);
+      if (on) next.add(region);
+      else next.delete(region);
+      saveFilters({ ...filters, regions: next });
+    },
+    [filters, saveFilters],
+  );
 
-  const toggleLanguage = useCallback((language: string, on: boolean) => {
-    const next = new Set(filters.languages);
-    if (on) next.add(language);
-    else next.delete(language);
-    saveFilters({ ...filters, languages: next });
-  }, [filters, saveFilters]);
+  const toggleLanguage = useCallback(
+    (language: string, on: boolean) => {
+      const next = new Set(filters.languages);
+      if (on) next.add(language);
+      else next.delete(language);
+      saveFilters({ ...filters, languages: next });
+    },
+    [filters, saveFilters],
+  );
 
   const categories = useMemo(() => {
     const tagSet = new Set<string>();
@@ -125,10 +150,7 @@ export function useServerFilters(servers: Server[], config: LauncherConfig | nul
     }
   }, [categories, regions, languages]);
 
-  const hasOffline = useMemo(
-    () => servers.some((s) => s.status !== "available"),
-    [servers],
-  );
+  const hasOffline = useMemo(() => servers.some((s) => s.status !== "available"), [servers]);
   const hasHubStatus = useMemo(
     () => servers.some((s) => (s.hub_status ?? "").length > 0),
     [servers],
@@ -144,28 +166,22 @@ export function useServerFilters(servers: Server[], config: LauncherConfig | nul
 
     let filtered =
       selectedTags.size > 0
-        ? uniqueServers.filter((server) =>
-            server.tags?.some((t) => selectedTags.has(t)),
-          )
+        ? uniqueServers.filter((server) => server.tags?.some((t) => selectedTags.has(t)))
         : uniqueServers;
 
     if (selectedRegions.size > 0) {
-      filtered = filtered.filter((server) =>
-        server.region && selectedRegions.has(server.region),
-      );
+      filtered = filtered.filter((server) => server.region && selectedRegions.has(server.region));
     }
 
     if (selectedLanguages.size > 0) {
-      filtered = filtered.filter((server) =>
-        server.language && selectedLanguages.has(server.language),
+      filtered = filtered.filter(
+        (server) => server.language && selectedLanguages.has(server.language),
       );
     }
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((server) =>
-        server.name.toLowerCase().includes(query),
-      );
+      filtered = filtered.filter((server) => server.name.toLowerCase().includes(query));
     }
 
     if (!show18Plus) {

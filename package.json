@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "fmt": "oxfmt src/",
+    "fmt:check": "oxfmt --check src/",
+    "lint": "oxlint src/",
+    "lint:fix": "oxlint --fix src/"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
@@ -31,6 +35,8 @@
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "oxfmt": "latest",
+    "oxlint": "latest",
     "sass": "^1.97.3",
     "typescript": "~5.6.2",
     "vite": "^6.0.3"

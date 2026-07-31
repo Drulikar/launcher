@@ -1,4 +1,5 @@
 import { create } from "zustand";
+
 import { commands, type LauncherConfig } from "../bindings";
 
 interface ConfigStore {

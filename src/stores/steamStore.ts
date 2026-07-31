@@ -1,7 +1,8 @@
 import { create } from "zustand";
+
 import { commands } from "../bindings";
-import { unwrap } from "../lib/unwrap";
 import type { SteamAuthResult, SteamUserInfo } from "../bindings";
+import { unwrap } from "../lib/unwrap";
 
 interface SteamStore {
   available: boolean;

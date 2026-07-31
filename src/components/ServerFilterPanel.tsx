@@ -2,6 +2,7 @@ import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import type { LauncherFeatures } from "../bindings";
 import type { useServerFilters } from "../hooks/useServerFilters";
 
@@ -77,8 +78,7 @@ export const ServerFilterPanel = ({
   const [ageModalVisible, setAgeModalVisible] = useState(false);
 
   const languageLabels = useMemo(
-    () =>
-      new Map(languages.map((code) => [code, getLanguageDisplayName(code)])),
+    () => new Map(languages.map((code) => [code, getLanguageDisplayName(code)])),
     [languages],
   );
 
@@ -142,13 +142,8 @@ export const ServerFilterPanel = ({
             {hasUnreadNews && <span className="unread-dot" />}
           </button>
           {features.direct_connect && onDirectConnect && (
-            <button
-              type="button"
-              className="view-tab"
-              onClick={onDirectConnect}
-            >
-              {t("common.connect")}{" "}
-              <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+            <button type="button" className="view-tab" onClick={onDirectConnect}>
+              {t("common.connect")} <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
             </button>
           )}
         </div>
@@ -174,9 +169,7 @@ export const ServerFilterPanel = ({
             {(features.server_filters || tagCategories.length > 0) &&
               (() => {
                 const activeCount =
-                  selectedTags.size +
-                  selectedRegions.size +
-                  selectedLanguages.size;
+                  selectedTags.size + selectedRegions.size + selectedLanguages.size;
                 return (
                   <div className="filters-dropdown" ref={filtersRef}>
                     <button
@@ -197,9 +190,7 @@ export const ServerFilterPanel = ({
                                 <input
                                   type="checkbox"
                                   checked={showHubStatus}
-                                  onChange={(e) =>
-                                    setShowHubStatus(e.target.checked)
-                                  }
+                                  onChange={(e) => setShowHubStatus(e.target.checked)}
                                 />
                                 <span>{t("servers.hubStatus")}</span>
                               </label>
@@ -209,9 +200,7 @@ export const ServerFilterPanel = ({
                                 <input
                                   type="checkbox"
                                   checked={show18Plus}
-                                  onChange={(e) =>
-                                    handle18PlusChange(e.target.checked)
-                                  }
+                                  onChange={(e) => handle18PlusChange(e.target.checked)}
                                 />
                                 <span>{t("servers.eighteenPlus")}</span>
                               </label>
@@ -221,28 +210,23 @@ export const ServerFilterPanel = ({
                                 <input
                                   type="checkbox"
                                   checked={showOffline}
-                                  onChange={(e) =>
-                                    setShowOffline(e.target.checked)
-                                  }
+                                  onChange={(e) => setShowOffline(e.target.checked)}
                                 />
                                 <span>{t("servers.offlineServers")}</span>
                               </label>
                             )}
                           </>
                         )}
-                        {features.server_filters &&
-                          tagCategories.length > 0 && (
-                            <div className="filter-divider" />
-                          )}
+                        {features.server_filters && tagCategories.length > 0 && (
+                          <div className="filter-divider" />
+                        )}
                         <div className="filter-row">
                           {tagCategories.map((tag) => (
                             <label className="styled-checkbox" key={tag}>
                               <input
                                 type="checkbox"
                                 checked={selectedTags.has(tag)}
-                                onChange={(e) =>
-                                  toggleTag(tag, e.target.checked)
-                                }
+                                onChange={(e) => toggleTag(tag, e.target.checked)}
                               />
                               <span>{tag}</span>
                             </label>
@@ -257,9 +241,7 @@ export const ServerFilterPanel = ({
                                   <input
                                     type="checkbox"
                                     checked={selectedRegions.has(region)}
-                                    onChange={(e) =>
-                                      toggleRegion(region, e.target.checked)
-                                    }
+                                    onChange={(e) => toggleRegion(region, e.target.checked)}
                                   />
                                   <span>{region}</span>
                                 </label>
@@ -276,13 +258,9 @@ export const ServerFilterPanel = ({
                                   <input
                                     type="checkbox"
                                     checked={selectedLanguages.has(lang)}
-                                    onChange={(e) =>
-                                      toggleLanguage(lang, e.target.checked)
-                                    }
+                                    onChange={(e) => toggleLanguage(lang, e.target.checked)}
                                   />
-                                  <span>
-                                    {languageLabels.get(lang) ?? lang}
-                                  </span>
+                                  <span>{languageLabels.get(lang) ?? lang}</span>
                                 </label>
                               ))}
                             </div>

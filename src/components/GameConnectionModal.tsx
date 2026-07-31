@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+
 import { commands } from "../bindings";
 
 export type GameConnectionState = "idle" | "connecting" | "connected" | "restarting";
@@ -61,7 +62,8 @@ export const GameConnectionModal = ({
   };
 
   const showSpinner = state === "connecting" || state === "restarting";
-  const progressPercent = ((CONNECTION_TIMEOUT_SECONDS - timeRemaining) / CONNECTION_TIMEOUT_SECONDS) * 100;
+  const progressPercent =
+    ((CONNECTION_TIMEOUT_SECONDS - timeRemaining) / CONNECTION_TIMEOUT_SECONDS) * 100;
 
   return (
     <div className="game-connection-overlay">
@@ -81,12 +83,7 @@ export const GameConnectionModal = ({
             </div>
           )}
         </div>
-        <button
-          type="button"
-          className="button"
-          onClick={handleCloseGame}
-          disabled={closing}
-        >
+        <button type="button" className="button" onClick={handleCloseGame} disabled={closing}>
           {closing ? t("connection.closing") : t("connection.closeGame")}
         </button>
       </div>

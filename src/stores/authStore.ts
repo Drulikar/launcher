@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { create } from "zustand";
+
 import { type AuthState, commands } from "../bindings";
 import { formatCommandError } from "../lib/formatCommandError";
 import { unwrap } from "../lib/unwrap";
@@ -18,9 +19,7 @@ interface AuthStore {
     provider: string,
   ) => Promise<{ success: boolean; error?: string; requires2fa?: boolean }>;
   hubSteamLogin: () => Promise<{ success: boolean; error?: string; requires2fa?: boolean }>;
-  hubComplete2fa: (
-    totpCode: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  hubComplete2fa: (totpCode: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   initListener: () => Promise<() => void>;
   loadOauthProviders: () => Promise<void>;

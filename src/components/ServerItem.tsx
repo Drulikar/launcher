@@ -1,8 +1,5 @@
-import {
-  faDiscord,
-  faGithub,
-  faSignalMessenger,
-} from "@fortawesome/free-brands-svg-icons";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { faDiscord, faGithub, faSignalMessenger } from "@fortawesome/free-brands-svg-icons";
 import {
   faBell,
   faBellSlash,
@@ -17,15 +14,15 @@ import {
   faStar,
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { MouseEvent } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { commands } from "../bindings";
+import type { Server } from "../bindings";
 import { useConnect, useError } from "../hooks";
 import { useConfigStore, useServerStore, useSettingsStore } from "../stores";
-import type { Server } from "../bindings";
 import { formatDuration } from "../utils";
 import { Modal, ModalContent } from "./Modal";
 import { TermsOfServiceModal } from "./TermsOfServiceModal";
@@ -58,24 +55,17 @@ export const ServerItem = ({
   const [whitelistRequired, setWhitelistedRequired] = useState(false);
   const [tosRequired, setTosRequired] = useState(false);
 
-  const { whitelistedServers, acceptedTosServers } = useSettingsStore()
+  const { whitelistedServers, acceptedTosServers } = useSettingsStore();
   const { showError } = useError();
   const { connect } = useConnect();
 
-  const hasInfo = !!(
-    server.description ||
-    (server.links && server.links.length > 0)
-  );
+  const hasInfo = !!(server.description || (server.links && server.links.length > 0));
 
   const config = useConfigStore((s) => s.config);
   const ping = useServerStore((s) => s.pings[server.url] ?? null);
   const relaysReady = useServerStore((s) => s.relaysReady);
-  const notificationsEnabled = useSettingsStore((s) =>
-    s.notificationServers.has(server.name),
-  );
-  const toggleServerNotifications = useSettingsStore(
-    (s) => s.toggleServerNotifications,
-  );
+  const notificationsEnabled = useSettingsStore((s) => s.notificationServers.has(server.name));
+  const toggleServerNotifications = useSettingsStore((s) => s.toggleServerNotifications);
   const isFavorited = useSettingsStore((s) =>
     server.id ? s.favoriteServers.has(server.id) : false,
   );
@@ -151,9 +141,7 @@ export const ServerItem = ({
         title={t("servers.openExternalLink")}
       >
         <ModalContent>
-          <p className="external-link-prompt">
-            {t("servers.externalLinkPrompt")}
-          </p>
+          <p className="external-link-prompt">{t("servers.externalLinkPrompt")}</p>
           <p className="external-link-url">{pendingUrl}</p>
           <div className="external-link-actions">
             <button
@@ -166,11 +154,7 @@ export const ServerItem = ({
             >
               {t("common.open")}
             </button>
-            <button
-              type="button"
-              className="button-cancel"
-              onClick={() => setPendingUrl(null)}
-            >
+            <button type="button" className="button-cancel" onClick={() => setPendingUrl(null)}>
               {t("common.cancel")}
             </button>
           </div>
@@ -196,9 +180,7 @@ export const ServerItem = ({
         onJoin={handleConnect}
         linkClick={setPendingUrl}
       />
-      <div
-        className={`server-item ${!isOnline ? "offline" : ""} ${infoOpen ? "expanded" : ""}`}
-      >
+      <div className={`server-item ${!isOnline ? "offline" : ""} ${infoOpen ? "expanded" : ""}`}>
         <div className="server-item-row">
           <div className="server-info">
             {showHubStatus ? (
@@ -219,12 +201,9 @@ export const ServerItem = ({
                       type="button"
                       className="badge badge-verified"
                       title={server.verified_domain}
-                      onClick={() =>
-                        setPendingUrl(`https://${server.verified_domain}`)
-                      }
+                      onClick={() => setPendingUrl(`https://${server.verified_domain}`)}
                     >
-                      <FontAwesomeIcon icon={faCircleCheck} />{" "}
-                      {server.verified_domain}
+                      <FontAwesomeIcon icon={faCircleCheck} /> {server.verified_domain}
                     </button>
                   )}
                   {!data && server.whitelisted && (
@@ -237,9 +216,7 @@ export const ServerItem = ({
                       <FontAwesomeIcon icon={faLock} /> Whitelisted
                     </button>
                   )}
-                  {!data && server.is_18_plus && (
-                    <span className="badge badge-18plus">18+</span>
-                  )}
+                  {!data && server.is_18_plus && <span className="badge badge-18plus">18+</span>}
                   {!data &&
                     server.tags
                       ?.filter((tag) => tag !== "18+")
@@ -258,8 +235,7 @@ export const ServerItem = ({
                       {[
                         ...modeMapParts,
                         ...roundInfoParts,
-                        ...(data.security_level &&
-                        data.security_level !== "no_warning"
+                        ...(data.security_level && data.security_level !== "no_warning"
                           ? ["__security__"]
                           : []),
                       ].map((part, i) =>
@@ -287,12 +263,9 @@ export const ServerItem = ({
                             type="button"
                             className="badge badge-verified"
                             title={server.verified_domain}
-                            onClick={() =>
-                              setPendingUrl(`https://${server.verified_domain}`)
-                            }
+                            onClick={() => setPendingUrl(`https://${server.verified_domain}`)}
                           >
-                            <FontAwesomeIcon icon={faCircleCheck} />{" "}
-                            {server.verified_domain}
+                            <FontAwesomeIcon icon={faCircleCheck} /> {server.verified_domain}
                           </button>
                         )}
                         {server.whitelisted && (
@@ -305,9 +278,7 @@ export const ServerItem = ({
                             <FontAwesomeIcon icon={faLock} /> Whitelisted
                           </button>
                         )}
-                        {server.is_18_plus && (
-                          <span className="badge badge-18plus">18+</span>
-                        )}
+                        {server.is_18_plus && <span className="badge badge-18plus">18+</span>}
                         {server.tags
                           ?.filter((tag) => tag !== "18+")
                           .map((tag) => (
@@ -316,18 +287,14 @@ export const ServerItem = ({
                             </span>
                           ))}
                         {server.language && (
-                          <span className="badge badge-tag">
-                            {server.language}
-                          </span>
+                          <span className="badge badge-tag">{server.language}</span>
                         )}
                       </div>
                     )}
                   </div>
                 ) : !isOnline ? (
                   <div className="server-details">
-                    <div className="detail-line dim">
-                      {t("servers.offline")}
-                    </div>
+                    <div className="detail-line dim">{t("servers.offline")}</div>
                   </div>
                 ) : null}
               </>
@@ -356,12 +323,7 @@ export const ServerItem = ({
                 <div
                   className="ping-count"
                   style={{
-                    color:
-                      ping < 80
-                        ? "#4ade80"
-                        : ping < 200
-                          ? "#facc15"
-                          : "#f87171",
+                    color: ping < 80 ? "#4ade80" : ping < 200 ? "#facc15" : "#f87171",
                   }}
                 >
                   <FontAwesomeIcon icon={faSignal} className="ping-icon" />
@@ -389,7 +351,13 @@ export const ServerItem = ({
               <button
                 type="button"
                 className={`button connect-button ${notWhitelisted ? "whitelisted-button" : ""}`}
-                onClick={notWhitelisted ? () => setWhitelistedRequired(true) : needsTosAccept ? () => setTosRequired(true) : handleConnect}
+                onClick={
+                  notWhitelisted
+                    ? () => setWhitelistedRequired(true)
+                    : needsTosAccept
+                      ? () => setTosRequired(true)
+                      : handleConnect
+                }
                 disabled={!canConnect || connecting || autoConnecting}
               >
                 {connecting || autoConnecting ? (
@@ -418,9 +386,7 @@ export const ServerItem = ({
                       : t("servers.enableNotifications")
                   }
                 >
-                  <FontAwesomeIcon
-                    icon={notificationsEnabled ? faBell : faBellSlash}
-                  />
+                  <FontAwesomeIcon icon={notificationsEnabled ? faBell : faBellSlash} />
                 </button>
               )}
               {server.id && (
@@ -428,11 +394,7 @@ export const ServerItem = ({
                   type="button"
                   className={`notify-toggle favorite-toggle ${isFavorited ? "favorited" : ""}`}
                   onClick={() => toggleFavorite(server.id!, !isFavorited)}
-                  title={
-                    isFavorited
-                      ? t("servers.unfavorite")
-                      : t("servers.favorite")
-                  }
+                  title={isFavorited ? t("servers.unfavorite") : t("servers.favorite")}
                 >
                   <FontAwesomeIcon icon={faStar} />
                 </button>
@@ -442,9 +404,7 @@ export const ServerItem = ({
         </div>
         {infoOpen && (
           <div className="server-info-panel">
-            {server.description && (
-              <div className="server-description">{server.description}</div>
-            )}
+            {server.description && <div className="server-description">{server.description}</div>}
             {server.links && server.links.length > 0 && (
               <div className="server-links">
                 {server.links.map((link) => (
@@ -456,9 +416,7 @@ export const ServerItem = ({
                     title={link.type}
                   >
                     <FontAwesomeIcon icon={LinkIconMap[link.type] ?? faGlobe} />
-                    <span>
-                      {link.type.charAt(0).toUpperCase() + link.type.slice(1)}
-                    </span>
+                    <span>{link.type.charAt(0).toUpperCase() + link.type.slice(1)}</span>
                   </button>
                 ))}
               </div>

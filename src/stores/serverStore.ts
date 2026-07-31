@@ -1,8 +1,9 @@
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { create } from "zustand";
+
 import { commands } from "../bindings";
-import { unwrap } from "../lib/unwrap";
 import type { RelayWithPing, Server } from "../bindings";
+import { unwrap } from "../lib/unwrap";
 
 interface ServerUpdateEvent {
   servers: Server[];
@@ -64,19 +65,13 @@ export const useServerStore = create<ServerStore>()((set) => ({
       console.error("Failed to get initial servers:", err);
     }
 
-    const unlistenUpdate = await listen<ServerUpdateEvent>(
-      "servers-updated",
-      (event) => {
-        set({ servers: event.payload.servers, loading: false, error: null, lastUpdated: Date.now() });
-      }
-    );
+    const unlistenUpdate = await listen<ServerUpdateEvent>("servers-updated", (event) => {
+      set({ servers: event.payload.servers, loading: false, error: null, lastUpdated: Date.now() });
+    });
 
-    const unlistenError = await listen<ServerErrorEvent>(
-      "servers-error",
-      (event) => {
-        set({ error: event.payload.error, loading: false });
-      }
-    );
+    const unlistenError = await listen<ServerErrorEvent>("servers-error", (event) => {
+      set({ error: event.payload.error, loading: false });
+    });
 
     try {
       const pings = unwrap(await commands.getServerPings());
@@ -85,12 +80,9 @@ export const useServerStore = create<ServerStore>()((set) => ({
       console.error("Failed to get initial pings:", err);
     }
 
-    const unlistenPings = await listen<ServerPingUpdate>(
-      "server-pings-updated",
-      (event) => {
-        set({ pings: event.payload.pings });
-      }
-    );
+    const unlistenPings = await listen<ServerPingUpdate>("server-pings-updated", (event) => {
+      set({ pings: event.payload.pings });
+    });
 
     return () => {
       unlistenUpdate();
@@ -111,21 +103,15 @@ export const useServerStore = create<ServerStore>()((set) => ({
       console.error("Failed to get initial relays:", err);
     }
 
-    const unlistenRelaysUpdated = await listen<RelayWithPing[]>(
-      "relays-updated",
-      (event) => {
-        const relays = event.payload;
-        const isReady = relaysResolved(relays);
-        set({ relays, relaysReady: isReady });
-      }
-    );
+    const unlistenRelaysUpdated = await listen<RelayWithPing[]>("relays-updated", (event) => {
+      const relays = event.payload;
+      const isReady = relaysResolved(relays);
+      set({ relays, relaysReady: isReady });
+    });
 
-    const unlistenRelaySelected = await listen<string>(
-      "relay-selected",
-      (event) => {
-        set({ selectedRelay: event.payload, relaysReady: true });
-      }
-    );
+    const unlistenRelaySelected = await listen<string>("relay-selected", (event) => {
+      set({ selectedRelay: event.payload, relaysReady: true });
+    });
 
     return () => {
       unlistenRelaysUpdated();

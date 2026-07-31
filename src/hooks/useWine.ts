@@ -1,8 +1,9 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { commands } from "../bindings";
-import { unwrap } from "../lib/unwrap";
 import type { RenderingPipeline, WineStatus } from "../bindings";
+import { unwrap } from "../lib/unwrap";
 import type { Platform, WineSetupProgress } from "../types";
 
 const initialWineStatus: WineStatus = {
@@ -17,9 +18,7 @@ const initialWineStatus: WineStatus = {
 export const useWine = () => {
   const [platform, setPlatform] = useState<Platform>("unknown");
   const [status, setStatus] = useState<WineStatus>(initialWineStatus);
-  const [setupProgress, setSetupProgress] = useState<WineSetupProgress | null>(
-    null,
-  );
+  const [setupProgress, setSetupProgress] = useState<WineSetupProgress | null>(null);
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
 
@@ -54,51 +53,51 @@ export const useWine = () => {
   }, []);
 
   useEffect(() => {
-    const unlisten = listen<WineSetupProgress>(
-      "wine-setup-progress",
-      (event) => {
-        setSetupProgress(event.payload);
+    const unlisten = listen<WineSetupProgress>("wine-setup-progress", (event) => {
+      setSetupProgress(event.payload);
 
-        if (event.payload.stage === "complete") {
-          setIsSettingUp(false);
-          refreshStatusRef.current?.();
-        } else if (event.payload.stage === "error") {
-          setIsSettingUp(false);
-          setSetupError(event.payload.message);
-        }
-      },
-    );
+      if (event.payload.stage === "complete") {
+        setIsSettingUp(false);
+        refreshStatusRef.current?.();
+      } else if (event.payload.stage === "error") {
+        setIsSettingUp(false);
+        setSetupError(event.payload.message);
+      }
+    });
 
     return () => {
       unlisten.then((u) => u());
     };
   }, []);
 
-  const initializePrefix = useCallback(async (pipeline: RenderingPipeline): Promise<boolean> => {
-    setIsSettingUp(true);
-    setSetupError(null);
-    setSetupProgress({
-      stage: "in_progress",
-      progress: 0,
-      message: "Starting Wine setup...",
-    });
-
-    try {
-      unwrap(await commands.initializeWinePrefix(pipeline));
-      await checkStatus();
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      setSetupError(errorMessage);
+  const initializePrefix = useCallback(
+    async (pipeline: RenderingPipeline): Promise<boolean> => {
+      setIsSettingUp(true);
+      setSetupError(null);
       setSetupProgress({
-        stage: "error",
+        stage: "in_progress",
         progress: 0,
-        message: errorMessage,
+        message: "Starting Wine setup...",
       });
-      setIsSettingUp(false);
-      return false;
-    }
-  }, [checkStatus]);
+
+      try {
+        unwrap(await commands.initializeWinePrefix(pipeline));
+        await checkStatus();
+        return true;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        setSetupError(errorMessage);
+        setSetupProgress({
+          stage: "error",
+          progress: 0,
+          message: errorMessage,
+        });
+        setIsSettingUp(false);
+        return false;
+      }
+    },
+    [checkStatus],
+  );
 
   const resetPrefix = useCallback(async (): Promise<boolean> => {
     setIsSettingUp(true);
@@ -126,11 +125,9 @@ export const useWine = () => {
     }
   }, [checkStatus]);
 
-  const needsSetup =
-    platform === "linux" && !status.prefix_initialized;
+  const needsSetup = platform === "linux" && !status.prefix_initialized;
 
-  const isReady =
-    platform !== "linux" || status.prefix_initialized;
+  const isReady = platform !== "linux" || status.prefix_initialized;
 
   return {
     platform,

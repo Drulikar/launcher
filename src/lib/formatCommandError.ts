@@ -1,4 +1,5 @@
 import i18next from "i18next";
+
 import type { CommandError } from "../bindings";
 
 export function formatCommandError(err: CommandError): string {
@@ -25,7 +26,10 @@ export function formatCommandError(err: CommandError): string {
     case "not_configured":
       return t("errors.not_configured", { feature: err.data.feature });
     case "unsupported_platform":
-      return t("errors.unsupported_platform", { feature: err.data.feature, platform: err.data.platform });
+      return t("errors.unsupported_platform", {
+        feature: err.data.feature,
+        platform: err.data.platform,
+      });
     case "busy":
       return t("errors.busy", { operation: err.data.operation });
     case "cancelled":

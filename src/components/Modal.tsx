@@ -45,12 +45,7 @@ export const Modal = ({
   };
 
   return (
-    <div
-      className={overlayClassName}
-      onClick={handleOverlayClick}
-      role="dialog"
-      aria-modal="true"
-    >
+    <div className={overlayClassName} onClick={handleOverlayClick} role="dialog" aria-modal="true">
       <div className={className}>
         {title ? (
           <div className="modal-header">
@@ -84,9 +79,7 @@ interface ModalContentProps {
 }
 
 export const ModalContent = ({ children }: ModalContentProps) => {
-  return (
-    <div className="modal-body">{children}</div>
-  );
+  return <div className="modal-body">{children}</div>;
 };
 
 export const ModalSpinner = () => {

@@ -1,10 +1,5 @@
-import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useState,
-} from "react";
+import { createContext, type ReactNode, useCallback, useContext, useState } from "react";
+
 import type { ErrorNotification } from "../types";
 
 interface ErrorContextType {

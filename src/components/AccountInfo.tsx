@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { commands } from "../bindings";
 import { useAuthFlow } from "../hooks";
 import { unwrap } from "../lib/unwrap";
@@ -90,7 +91,12 @@ export const AccountInfo = () => {
           avatar={byondWebUsername.charAt(0).toUpperCase()}
           name={byondWebUsername}
           status={t("account.loggedInViaByondWeb")}
-          actions={[{ label: byondLoggingOut ? t("common.loggingOut") : t("common.logout"), onClick: onByondLogout }]}
+          actions={[
+            {
+              label: byondLoggingOut ? t("common.loggingOut") : t("common.logout"),
+              onClick: onByondLogout,
+            },
+          ]}
         />
       );
     }
@@ -105,9 +111,8 @@ export const AccountInfo = () => {
       );
     }
     // Not logged in via web or pager - show login button
-    const status = byondPagerRunning === true
-      ? t("account.pagerOpenNotLoggedIn")
-      : t("account.notLoggedIn");
+    const status =
+      byondPagerRunning === true ? t("account.pagerOpenNotLoggedIn") : t("account.notLoggedIn");
     return (
       <AccountDisplay
         avatar="B"
@@ -115,7 +120,10 @@ export const AccountInfo = () => {
         status={status}
         actions={[
           { label: t("common.login"), onClick: onByondLogin, primary: true },
-          { label: t("common.createAccount"), onClick: () => commands.openUrl("https://secure.byond.com/Join") },
+          {
+            label: t("common.createAccount"),
+            onClick: () => commands.openUrl("https://secure.byond.com/Join"),
+          },
         ]}
       />
     );
@@ -142,8 +150,7 @@ export const AccountInfo = () => {
   }
 
   if (authState.logged_in && authState.user) {
-    const displayName =
-      authState.user.name || authState.user.preferred_username || "User";
+    const displayName = authState.user.name || authState.user.preferred_username || "User";
     return (
       <AccountDisplay
         avatar={displayName.charAt(0).toUpperCase()}

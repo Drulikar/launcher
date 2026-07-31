@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import { useSinglePlayer } from "../hooks";
 
 const formatBytes = (bytes: number): string => {
@@ -38,9 +39,7 @@ export const SinglePlayerPanel = () => {
     <div className="singleplayer-panel">
       <div className="singleplayer-header">
         <h3>{t("singleplayer.title")}</h3>
-        <p className="singleplayer-description">
-          {t("singleplayer.description")}
-        </p>
+        <p className="singleplayer-description">{t("singleplayer.description")}</p>
       </div>
 
       {error && (
@@ -81,7 +80,9 @@ export const SinglePlayerPanel = () => {
         <div className="singleplayer-status-indicator">
           {status.installed ? (
             <span className={updateAvailable ? "status-warning" : "status-ok"}>
-              {updateAvailable ? t("singleplayer.updateRequired") : t("singleplayer.upToDate", { version: status.version })}
+              {updateAvailable
+                ? t("singleplayer.updateRequired")
+                : t("singleplayer.upToDate", { version: status.version })}
             </span>
           ) : (
             <span>{t("singleplayer.notInstalled")}</span>
@@ -91,12 +92,7 @@ export const SinglePlayerPanel = () => {
           {status.installed ? (
             <>
               {updateAvailable && (
-                <button
-                  type="button"
-                  className="button"
-                  onClick={install}
-                  disabled={loading}
-                >
+                <button type="button" className="button" onClick={install} disabled={loading}>
                   {loading ? t("singleplayer.updating") : t("singleplayer.update")}
                 </button>
               )}
@@ -119,12 +115,7 @@ export const SinglePlayerPanel = () => {
               {loading ? t("singleplayer.downloading") : t("singleplayer.download")}
             </button>
           )}
-          <button
-            type="button"
-            className="button-secondary"
-            onClick={refresh}
-            disabled={loading}
-          >
+          <button type="button" className="button-secondary" onClick={refresh} disabled={loading}>
             {t("common.refresh")}
           </button>
         </div>

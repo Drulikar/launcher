@@ -1,7 +1,8 @@
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { faDiscord, faTwitch } from "@fortawesome/free-brands-svg-icons";
 import { faBook, faComments } from "@fortawesome/free-solid-svg-icons";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import { commands } from "../bindings";
 import type { SocialLink } from "../bindings";
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
+
 import type { HubAnnouncement } from "../bindings";
 import { useSettingsStore } from "../stores";
 
@@ -27,9 +28,7 @@ export const NewsPage = ({ announcements }: NewsPageProps) => {
 
   return (
     <div className="news-page">
-      {news.length === 0 && (
-        <div className="news-empty">{t("news.empty")}</div>
-      )}
+      {news.length === 0 && <div className="news-empty">{t("news.empty")}</div>}
       {news.map((a) => {
         const expanded = expandedId === a.id;
         const needsTruncation = a.body.split("\n").length > 3;

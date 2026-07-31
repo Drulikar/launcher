@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import { Modal, ModalSpinner } from "./Modal";
 
 interface ByondLoginModalProps {

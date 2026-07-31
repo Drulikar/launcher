@@ -1,13 +1,13 @@
 @font-face {
-  font-family: 'DejaVu Sans Mono';
-  src: url('../assets/fonts/DejaVuSansMono.ttf') format('truetype');
+  font-family: "DejaVu Sans Mono";
+  src: url("../assets/fonts/DejaVuSansMono.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'DejaVu Sans Mono';
-  src: url('../assets/fonts/DejaVuSansMono-Bold.ttf') format('truetype');
+  font-family: "DejaVu Sans Mono";
+  src: url("../assets/fonts/DejaVuSansMono-Bold.ttf") format("truetype");
   font-weight: bold;
   font-style: normal;
 }
@@ -29,7 +29,7 @@ body,
 }
 
 body {
-  font-family: 'DejaVu Sans Mono', monospace;
+  font-family: "DejaVu Sans Mono", monospace;
   color: white;
 }
 
@@ -655,7 +655,6 @@ body {
     background-color: #d0c710;
     color: #1f1a1a;
   }
-
 }
 
 .connect-auth-icon {
@@ -1368,7 +1367,6 @@ body {
         border-color: var(--primary);
       }
     }
-
   }
 
   .button {
@@ -2399,7 +2397,6 @@ p.settings-description-hint {
     text-decoration: underline;
   }
 }
-
 
 * {
   scrollbar-color: #4a4a4a #1a1a1a;

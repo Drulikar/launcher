@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import { commands } from "../bindings";
 import { Modal, ModalContent, ModalSpinner } from "./Modal";
 
@@ -60,11 +61,7 @@ export const SteamAuthModal = ({
             <button type="button" className="button" onClick={openLinkingUrl}>
               {t("auth.steamYesLink")}
             </button>
-            <button
-              type="button"
-              className="button-secondary"
-              onClick={() => onAuthenticate(true)}
-            >
+            <button type="button" className="button-secondary" onClick={() => onAuthenticate(true)}>
               {t("auth.steamNoStart")}
             </button>
           </div>
@@ -73,11 +70,7 @@ export const SteamAuthModal = ({
       {state === "error" && (
         <ModalContent>
           <p className="auth-error-message">{error}</p>
-          <button
-            type="button"
-            className="button"
-            onClick={() => onAuthenticate(false)}
-          >
+          <button type="button" className="button" onClick={() => onAuthenticate(false)}>
             {t("common.tryAgain")}
           </button>
         </ModalContent>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 
+import { commands } from "./bindings";
 import {
   AccountInfo,
   ByondLoginModal,
@@ -34,7 +35,6 @@ import {
   useServerFilters,
   useWine,
 } from "./hooks";
-import { commands } from "./bindings";
 import {
   useByondStore,
   useConfigStore,
@@ -72,7 +72,15 @@ const AppContent = () => {
     })),
   );
 
-  const { authMode, theme, devMode, renderingPipeline, saveAuthMode, saveTheme, saveRenderingPipeline } = useSettingsStore(
+  const {
+    authMode,
+    theme,
+    devMode,
+    renderingPipeline,
+    saveAuthMode,
+    saveTheme,
+    saveRenderingPipeline,
+  } = useSettingsStore(
     useShallow((s) => ({
       authMode: s.authMode,
       theme: s.theme,
@@ -116,7 +124,8 @@ const AppContent = () => {
   const saveLastViewMode = useSettingsStore((s) => s.saveLastViewMode);
 
   const defaultMode: ViewMode = showHome ? "home" : "browse";
-  const viewMode = (lastViewMode && (lastViewMode !== "home" || showHome)) ? lastViewMode : defaultMode;
+  const viewMode =
+    lastViewMode && (lastViewMode !== "home" || showHome) ? lastViewMode : defaultMode;
 
   const handleViewModeChange = (mode: ViewMode) => {
     saveLastViewMode(mode);
@@ -125,7 +134,8 @@ const AppContent = () => {
   const announcements = useAnnouncements();
   const lastReadAnnouncement = useSettingsStore((s) => s.lastReadAnnouncement);
   const newsAnnouncements = announcements.filter((a) => a.kind === "announcement");
-  const hasUnreadNews = newsAnnouncements.length > 0 && newsAnnouncements[0].id !== lastReadAnnouncement;
+  const hasUnreadNews =
+    newsAnnouncements.length > 0 && newsAnnouncements[0].id !== lastReadAnnouncement;
 
   const filters = useServerFilters(servers, config);
   const { showHubStatus, filteredServers } = filters;
@@ -180,10 +190,13 @@ const AppContent = () => {
     [saveRenderingPipeline, showError],
   );
 
-  const handleWineSetup = useCallback(async (pipeline: typeof renderingPipeline) => {
-    await saveRenderingPipeline(pipeline);
-    await initializeWinePrefix(pipeline);
-  }, [initializeWinePrefix, saveRenderingPipeline]);
+  const handleWineSetup = useCallback(
+    async (pipeline: typeof renderingPipeline) => {
+      await saveRenderingPipeline(pipeline);
+      await initializeWinePrefix(pipeline);
+    },
+    [initializeWinePrefix, saveRenderingPipeline],
+  );
 
   const handleWineRetry = useCallback(async () => {
     await checkWineStatus();
@@ -281,7 +294,9 @@ const AppContent = () => {
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
                 showHome={showHome}
-                onDirectConnect={config.features.direct_connect ? () => setDirectConnectVisible(true) : undefined}
+                onDirectConnect={
+                  config.features.direct_connect ? () => setDirectConnectVisible(true) : undefined
+                }
                 hasEighteenPlus={servers.filter((s) => s.is_18_plus).length > 0}
                 hasUnreadNews={hasUnreadNews}
               />
@@ -299,7 +314,9 @@ const AppContent = () => {
                   <div className="server-loading">{t("servers.loading")}</div>
                 )}
                 {serversError && (
-                  <div className="server-error">{t("errors.prefix", { message: serversError })}</div>
+                  <div className="server-error">
+                    {t("errors.prefix", { message: serversError })}
+                  </div>
                 )}
                 {filteredServers.map((server) => (
                   <ServerItem

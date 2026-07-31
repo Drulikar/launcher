@@ -96,18 +96,10 @@ export const UpdateNotification = () => {
           </div>
         ) : (
           <div className="update-actions">
-            <button
-              type="button"
-              className="update-button"
-              onClick={handleUpdate}
-            >
+            <button type="button" className="update-button" onClick={handleUpdate}>
               {t("common.install")}
             </button>
-            <button
-              type="button"
-              className="update-dismiss"
-              onClick={handleDismiss}
-            >
+            <button type="button" className="update-dismiss" onClick={handleDismiss}>
               {t("common.later")}
             </button>
           </div>

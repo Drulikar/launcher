@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Modal, ModalContent } from "./Modal";
 
 interface AgeVerificationModalProps {
@@ -66,11 +67,7 @@ export const AgeVerificationModal = ({
     }
 
     const dob = new Date(y, m - 1, d);
-    if (
-      dob.getFullYear() !== y ||
-      dob.getMonth() !== m - 1 ||
-      dob.getDate() !== d
-    ) {
+    if (dob.getFullYear() !== y || dob.getMonth() !== m - 1 || dob.getDate() !== d) {
       setError(t("age.invalidDate"));
       return;
     }
@@ -114,11 +111,7 @@ export const AgeVerificationModal = ({
           </div>
           <p className="age-disclaimer">{t("age.disclaimer")}</p>
           {error && <p className="auth-error-message">{error}</p>}
-          <button
-            type="submit"
-            className="button"
-            disabled={!year || !month || !day}
-          >
+          <button type="submit" className="button" disabled={!year || !month || !day}>
             {t("common.confirm")}
           </button>
         </form>

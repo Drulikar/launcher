@@ -1,6 +1,7 @@
-import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import { listen } from "@tauri-apps/api/event";
+import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import { useEffect } from "react";
+
 import { useConnect } from "./useConnect";
 
 export function useDeepLink() {
@@ -21,9 +22,8 @@ export function useDeepLink() {
 
     const setup = async () => {
       unlistenDeepLink = await onOpenUrl(handleUrls);
-      unlistenSingleInstance = await listen<string[]>(
-        "deep-link://new-url",
-        (event) => handleUrls(event.payload),
+      unlistenSingleInstance = await listen<string[]>("deep-link://new-url", (event) =>
+        handleUrls(event.payload),
       );
     };
 

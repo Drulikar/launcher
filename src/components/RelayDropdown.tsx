@@ -1,6 +1,7 @@
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
+
 import type { RelayWithPing } from "../bindings";
 
 interface RelayDropdownProps {
@@ -55,33 +56,33 @@ export const RelayDropdown = ({
               return a.ping - b.ping;
             })
             .map((relay) => {
-            const isDisabled = relay.ping === null && !relay.checking && !relay.fallback;
-            const isSelected = selectedRelay === relay.id;
+              const isDisabled = relay.ping === null && !relay.checking && !relay.fallback;
+              const isSelected = selectedRelay === relay.id;
 
-            return (
-              <label
-                key={relay.id}
-                className={`relay-option ${isSelected ? "selected" : ""} ${isDisabled ? "disabled" : ""}`}
-              >
-                <input
-                  type="radio"
-                  name="relay"
-                  value={relay.id}
-                  checked={isSelected}
-                  onChange={() => onSelect(relay.id)}
-                  disabled={isDisabled}
-                />
-                <span className="relay-name">{relay.name}</span>
-                <span className="relay-ping">
-                  {relay.checking
-                    ? "..."
-                    : relay.ping !== null
-                      ? `${relay.ping}ms`
-                      : t("relay.na")}
-                </span>
-              </label>
-            );
-          })}
+              return (
+                <label
+                  key={relay.id}
+                  className={`relay-option ${isSelected ? "selected" : ""} ${isDisabled ? "disabled" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="relay"
+                    value={relay.id}
+                    checked={isSelected}
+                    onChange={() => onSelect(relay.id)}
+                    disabled={isDisabled}
+                  />
+                  <span className="relay-name">{relay.name}</span>
+                  <span className="relay-ping">
+                    {relay.checking
+                      ? "..."
+                      : relay.ping !== null
+                        ? `${relay.ping}ms`
+                        : t("relay.na")}
+                  </span>
+                </label>
+              );
+            })}
         </div>
       )}
     </div>

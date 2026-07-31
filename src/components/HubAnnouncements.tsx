@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Markdown from "react-markdown";
+
 import type { HubAnnouncement } from "../bindings";
 
 interface HubAnnouncementsProps {
@@ -42,12 +43,15 @@ export const HubAnnouncements = ({ announcements }: HubAnnouncementsProps) => {
               <strong>{a.title}</strong>
               {a.active_until && (
                 <span className="hub-announcement__until">
-                  {" "}&mdash; until {new Date(a.active_until).toLocaleString()}
+                  {" "}
+                  &mdash; until {new Date(a.active_until).toLocaleString()}
                 </span>
               )}
             </div>
             {!collapsed && a.body && (
-              <div className="hub-announcement__body"><Markdown>{a.body}</Markdown></div>
+              <div className="hub-announcement__body">
+                <Markdown>{a.body}</Markdown>
+              </div>
             )}
           </div>
         );

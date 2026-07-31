@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
+
 import { commands } from "../bindings";
-import { unwrap } from "../lib/unwrap";
 import type { ReleaseInfo, SinglePlayerStatus } from "../bindings";
+import { unwrap } from "../lib/unwrap";
 
 const initialStatus: SinglePlayerStatus = {
   installed: false,

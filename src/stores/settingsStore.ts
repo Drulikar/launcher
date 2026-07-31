@@ -1,5 +1,13 @@
 import { create } from "zustand";
-import { type AppSettings, type AuthMode, type FilterSettings, type RenderingPipeline, commands, type Theme } from "../bindings";
+
+import {
+  type AppSettings,
+  type AuthMode,
+  type FilterSettings,
+  type RenderingPipeline,
+  commands,
+  type Theme,
+} from "../bindings";
 import { setLocale } from "../i18n";
 import { unwrap } from "../lib/unwrap";
 

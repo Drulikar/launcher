@@ -1,9 +1,10 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe } from "@fortawesome/free-solid-svg-icons";
-import type { Server } from "../bindings";
-import { Modal, ModalContent } from "./Modal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
+
+import type { Server } from "../bindings";
 import { useSettingsStore } from "../stores";
+import { Modal, ModalContent } from "./Modal";
 
 interface TermsOfServiceModalProps {
   visible: boolean;

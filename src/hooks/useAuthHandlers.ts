@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
+
 import { commands } from "../bindings";
 import type { AuthModalState } from "../components/AuthModal";
 import { unwrap } from "../lib/unwrap";
@@ -32,11 +33,7 @@ export function useAuthHandlers() {
   const handleLogin = useCallback(async () => {
     setAuthModal({ visible: true, state: "loading", error: undefined });
     const result = await login();
-    setAuthModal(
-      result.success
-        ? CLOSED
-        : { visible: true, state: "error", error: result.error },
-    );
+    setAuthModal(result.success ? CLOSED : { visible: true, state: "error", error: result.error });
   }, [login]);
 
   const handleLogout = useCallback(async () => {
@@ -54,7 +51,9 @@ export function useAuthHandlers() {
       const result = await commands.startByondLogin();
       if (result.status === "error") {
         if (result.error.type === "cancelled") return;
-        try { unwrap(result); } catch (err) {
+        try {
+          unwrap(result);
+        } catch (err) {
           showError(err instanceof Error ? err.message : String(err));
         }
       }
@@ -75,14 +74,21 @@ export function useAuthHandlers() {
     }
   }, [showError, setLoggingOut]);
 
-  const [pendingPasswordLogin, setPendingPasswordLogin] = useState<{ username: string; password: string } | null>(null);
+  const [pendingPasswordLogin, setPendingPasswordLogin] = useState<{
+    username: string;
+    password: string;
+  } | null>(null);
 
   const handleHubLogin = useCallback(
     async (username: string, password: string, totpCode?: string) => {
       setAuthModal({ visible: true, state: "loading", error: undefined });
 
       if (totpCode && pendingPasswordLogin) {
-        const result = await hubLogin(pendingPasswordLogin.username, pendingPasswordLogin.password, totpCode);
+        const result = await hubLogin(
+          pendingPasswordLogin.username,
+          pendingPasswordLogin.password,
+          totpCode,
+        );
         if (result.success) {
           setPendingPasswordLogin(null);
           setAuthModal(CLOSED);

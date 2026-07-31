@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { commands } from "../bindings";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { faSteam, faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { faKey } from "@fortawesome/free-solid-svg-icons";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { commands } from "../bindings";
 import { Modal, ModalContent, ModalSpinner } from "./Modal";
 
 export type AuthModalState = "idle" | "loading" | "error" | "2fa";
@@ -19,11 +20,7 @@ interface AuthModalProps {
   steamAvailable: boolean;
   registerUrl?: string | null;
   onLogin: () => void;
-  onHubLogin: (
-    username: string,
-    password: string,
-    totpCode?: string,
-  ) => void;
+  onHubLogin: (username: string, password: string, totpCode?: string) => void;
   onOAuthLogin: (provider: string) => void;
   onSteamLogin: () => void;
   onClose: () => void;
@@ -137,18 +134,16 @@ export const AuthModal = ({
           ) : (
             <>
               <div className="steam-login-section">
-                <button
-                  type="button"
-                  className="button steam-login-button"
-                  onClick={onSteamLogin}
-                >
+                <button type="button" className="button steam-login-button" onClick={onSteamLogin}>
                   <FontAwesomeIcon icon={faSteam} />
                   {t("auth.signInWithSteam")}
                 </button>
               </div>
               {oauthProviders.length > 0 && (
                 <div className="oauth-providers">
-                  <div className="oauth-divider"><span>{t("common.or")}</span></div>
+                  <div className="oauth-divider">
+                    <span>{t("common.or")}</span>
+                  </div>
                   {oauthProviders.map((provider) => (
                     <button
                       key={provider}
@@ -156,8 +151,8 @@ export const AuthModal = ({
                       className="button-secondary oauth-button"
                       onClick={() => onOAuthLogin(provider)}
                     >
-                      <FontAwesomeIcon icon={OAUTH_ICONS[provider] ?? faKey} />
-                      {" "}{OAUTH_DISPLAY_NAMES[provider] ?? provider}
+                      <FontAwesomeIcon icon={OAUTH_ICONS[provider] ?? faKey} />{" "}
+                      {OAUTH_DISPLAY_NAMES[provider] ?? provider}
                     </button>
                   ))}
                 </div>
@@ -204,7 +199,9 @@ export const AuthModal = ({
           </form>
           {oauthProviders.length > 0 && (
             <div className="oauth-providers">
-              <div className="oauth-divider"><span>{t("common.or")}</span></div>
+              <div className="oauth-divider">
+                <span>{t("common.or")}</span>
+              </div>
               {oauthProviders.map((provider) => (
                 <button
                   key={provider}
@@ -212,8 +209,8 @@ export const AuthModal = ({
                   className="button-secondary oauth-button"
                   onClick={() => onOAuthLogin(provider)}
                 >
-                  <FontAwesomeIcon icon={OAUTH_ICONS[provider] ?? faKey} />
-                  {" "}{OAUTH_DISPLAY_NAMES[provider] ?? provider}
+                  <FontAwesomeIcon icon={OAUTH_ICONS[provider] ?? faKey} />{" "}
+                  {OAUTH_DISPLAY_NAMES[provider] ?? provider}
                 </button>
               ))}
             </div>

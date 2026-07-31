@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useState } from "react";
+
 import type { GameConnectionState } from "../components";
 
 interface GameRestartingEvent {
@@ -8,11 +9,8 @@ interface GameRestartingEvent {
 }
 
 export const useGameConnection = () => {
-  const [gameConnectionState, setGameConnectionState] =
-    useState<GameConnectionState>("idle");
-  const [connectedServerName, setConnectedServerName] = useState<string | null>(
-    null
-  );
+  const [gameConnectionState, setGameConnectionState] = useState<GameConnectionState>("idle");
+  const [connectedServerName, setConnectedServerName] = useState<string | null>(null);
   const [restartReason, setRestartReason] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,14 +26,11 @@ export const useGameConnection = () => {
       setRestartReason(null);
     });
 
-    const unlistenRestarting = listen<GameRestartingEvent>(
-      "game-restarting",
-      (event) => {
-        setGameConnectionState("restarting");
-        setConnectedServerName(event.payload.server_name);
-        setRestartReason(event.payload.reason);
-      }
-    );
+    const unlistenRestarting = listen<GameRestartingEvent>("game-restarting", (event) => {
+      setGameConnectionState("restarting");
+      setConnectedServerName(event.payload.server_name);
+      setRestartReason(event.payload.reason);
+    });
 
     const unlistenClosed = listen("game-closed", () => {
       setGameConnectionState("idle");

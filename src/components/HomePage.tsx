@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+
 import type { Server } from "../bindings";
 import { useSettingsStore } from "../stores";
 import { ServerItem } from "./ServerItem";
@@ -45,9 +46,7 @@ export const HomePage = ({ servers }: HomePageProps) => {
           </div>
         </div>
       )}
-      {!hasContent && (
-        <div className="home-empty">{t("home.noFavorites")}</div>
-      )}
+      {!hasContent && <div className="home-empty">{t("home.noFavorites")}</div>}
     </div>
   );
 };

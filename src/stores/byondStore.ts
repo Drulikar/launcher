@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { create } from "zustand";
+
 import { commands } from "../bindings";
 import { unwrap } from "../lib/unwrap";
 
@@ -58,19 +59,13 @@ export const useByondStore = create<ByondStore>()((set) => ({
       // Ignore errors
     }
 
-    const unlistenSession = await listen<string | null>(
-      "byond-session-changed",
-      (event) => {
-        set({ username: event.payload });
-      },
-    );
+    const unlistenSession = await listen<string | null>("byond-session-changed", (event) => {
+      set({ username: event.payload });
+    });
 
-    const unlistenLogin = await listen<boolean>(
-      "byond-login-visible",
-      (event) => {
-        set({ loginVisible: event.payload });
-      },
-    );
+    const unlistenLogin = await listen<boolean>("byond-login-visible", (event) => {
+      set({ loginVisible: event.payload });
+    });
 
     return () => {
       unlistenSession();

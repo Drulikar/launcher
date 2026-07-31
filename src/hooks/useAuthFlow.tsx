@@ -1,5 +1,6 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+
 import { AuthModal } from "../components/AuthModal";
 import { SteamAuthModal } from "../components/SteamAuthModal";
 import { useAuthStore, useConfigStore, useSteamStore } from "../stores";

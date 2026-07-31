@@ -1,5 +1,6 @@
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
+
 import { useAuthFlow } from "./useAuthFlow";
 import { useError } from "./useError";
 

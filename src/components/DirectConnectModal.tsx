@@ -1,10 +1,11 @@
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+
 import { commands, DirectConnectInfo } from "../bindings";
-import { formatCommandError } from "../lib/formatCommandError";
 import { useConnect, useError } from "../hooks";
+import { formatCommandError } from "../lib/formatCommandError";
 import { useSettingsStore } from "../stores";
 import { Modal } from "./Modal";
 
@@ -30,9 +31,7 @@ function TrustInfo({ connectInfo }: { connectInfo: DirectConnectInfo }) {
   if (connectInfo.trust === "Unreachable") {
     return (
       <>
-        <p className="settings-description">
-          {t("directConnect.unreachableWarning")}
-        </p>
+        <p className="settings-description">{t("directConnect.unreachableWarning")}</p>
         <p className="settings-description settings-description-hint">
           {t("directConnect.unreachableDetail")}
         </p>
@@ -43,9 +42,7 @@ function TrustInfo({ connectInfo }: { connectInfo: DirectConnectInfo }) {
   if (connectInfo.trust === "SelfReported") {
     return (
       <>
-        <p className="settings-description">
-          {t("directConnect.selfReportedWarning")}
-        </p>
+        <p className="settings-description">{t("directConnect.selfReportedWarning")}</p>
         <p className="settings-description settings-description-hint">
           {t("directConnect.selfReportedDetail")}
         </p>
@@ -53,11 +50,7 @@ function TrustInfo({ connectInfo }: { connectInfo: DirectConnectInfo }) {
     );
   }
 
-  return (
-    <p className="settings-description">
-      {t("directConnect.byondOnlyInfo")}
-    </p>
-  );
+  return <p className="settings-description">{t("directConnect.byondOnlyInfo")}</p>;
 }
 
 function shouldSkipConfirmation(info: DirectConnectInfo, address: string): boolean {

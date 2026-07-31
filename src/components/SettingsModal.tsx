@@ -1,15 +1,16 @@
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getVersion } from "@tauri-apps/api/app";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { commands } from "../bindings";
-import { useAuthFlow } from "../hooks";
-import { unwrap } from "../lib/unwrap";
-import { getAvailableLocales } from "../i18n";
-import { useByondStore, useConfigStore, useSettingsStore } from "../stores";
 import type { AuthMode, RenderingPipeline, Theme, WineStatus } from "../bindings";
+import { useAuthFlow } from "../hooks";
+import { getAvailableLocales } from "../i18n";
+import { unwrap } from "../lib/unwrap";
+import { useByondStore, useConfigStore, useSettingsStore } from "../stores";
 import type { Platform } from "../types";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Modal } from "./Modal";
 
 interface LocaleDropdownProps {
@@ -34,7 +35,7 @@ const LocaleDropdown = ({ value, options, autoLabel, onChange }: LocaleDropdownP
   }, []);
 
   const selectedLabel = value
-    ? options.find((o) => o.value === value)?.label ?? value
+    ? (options.find((o) => o.value === value)?.label ?? value)
     : autoLabel;
 
   return (
@@ -54,7 +55,10 @@ const LocaleDropdown = ({ value, options, autoLabel, onChange }: LocaleDropdownP
           <button
             type="button"
             className={`locale-dropdown-item ${value === null ? "selected" : ""}`}
-            onClick={() => { onChange(null); setOpen(false); }}
+            onClick={() => {
+              onChange(null);
+              setOpen(false);
+            }}
           >
             {autoLabel}
           </button>
@@ -63,7 +67,10 @@ const LocaleDropdown = ({ value, options, autoLabel, onChange }: LocaleDropdownP
               key={opt.value}
               type="button"
               className={`locale-dropdown-item ${value === opt.value ? "selected" : ""}`}
-              onClick={() => { onChange(opt.value); setOpen(false); }}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
             >
               {opt.label}
             </button>
@@ -90,9 +97,7 @@ const AuthModeOption = ({
   onChange,
 }: AuthModeOptionProps) => {
   return (
-    <label
-      className={`auth-mode-option ${currentMode === mode ? "selected" : ""}`}
-    >
+    <label className={`auth-mode-option ${currentMode === mode ? "selected" : ""}`}>
       <input
         type="radio"
         name="authMode"
@@ -116,17 +121,9 @@ interface ThemeOptionProps {
   onChange: (theme: Theme) => void;
 }
 
-const ThemeOption = ({
-  theme,
-  currentTheme,
-  name,
-  description,
-  onChange,
-}: ThemeOptionProps) => {
+const ThemeOption = ({ theme, currentTheme, name, description, onChange }: ThemeOptionProps) => {
   return (
-    <label
-      className={`theme-option ${currentTheme === theme ? "selected" : ""}`}
-    >
+    <label className={`theme-option ${currentTheme === theme ? "selected" : ""}`}>
       <input
         type="radio"
         name="theme"
@@ -227,9 +224,7 @@ const WineSettings = ({
       >
         {isResetting ? t("wine.resetting") : t("wine.resetPrefix")}
       </button>
-      <p className="settings-hint">
-        {t("wine.resetHint")}
-      </p>
+      <p className="settings-hint">{t("wine.resetHint")}</p>
     </div>
   );
 };
@@ -346,9 +341,9 @@ export const SettingsModal = ({
   const saveRichPresence = useSettingsStore((s) => s.saveRichPresence);
 
   const [appVersion, setAppVersion] = useState<string>("");
-  const [byondLoginState, setByondLoginState] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+  const [byondLoginState, setByondLoginState] = useState<"idle" | "loading" | "success" | "error">(
+    "idle",
+  );
   const [byondLoginError, setByondLoginError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -388,7 +383,9 @@ export const SettingsModal = ({
           type="button"
           className="help-link"
           onClick={() =>
-            commands.openUrl(config?.urls.help_url || "https://github.com/cmss13-devs/cm-launcher/issues")
+            commands.openUrl(
+              config?.urls.help_url || "https://github.com/cmss13-devs/cm-launcher/issues",
+            )
           }
           title={t("settings.reportIssue")}
         >
@@ -399,9 +396,7 @@ export const SettingsModal = ({
       <div className="modal-body">
         <div className="settings-section">
           <h3>{t("settings.appearance")}</h3>
-          <p className="settings-description">
-            {t("settings.themeDescription")}
-          </p>
+          <p className="settings-description">{t("settings.themeDescription")}</p>
           <div className="theme-options">
             <ThemeOption
               theme="tgui"
@@ -422,9 +417,7 @@ export const SettingsModal = ({
 
         <div className="settings-section">
           <h3>{t("settings.language")}</h3>
-          <p className="settings-description">
-            {t("settings.languageDescription")}
-          </p>
+          <p className="settings-description">{t("settings.languageDescription")}</p>
           <LocaleDropdown
             value={locale}
             autoLabel={t("settings.languageAuto")}
@@ -435,9 +428,7 @@ export const SettingsModal = ({
 
         <div className="settings-section">
           <h3>{t("settings.richPresence")}</h3>
-          <p className="settings-description">
-            {t("settings.richPresenceDescription")}
-          </p>
+          <p className="settings-description">{t("settings.richPresenceDescription")}</p>
           <label className="toggle-setting">
             <input
               type="checkbox"
@@ -450,22 +441,14 @@ export const SettingsModal = ({
 
         <div className="settings-section">
           <h3>{t("settings.authMode")}</h3>
-          <p className="settings-description">
-            {t("settings.authModeDescription")}
-          </p>
+          <p className="settings-description">{t("settings.authModeDescription")}</p>
           {authMode === "byond" && byondPagerRunning === false && !byondWebUsername && (
             <div className="byond-login-section">
-              <div className="auth-mode-warning">
-                {t("settings.byondPagerWarning")}
-              </div>
+              <div className="auth-mode-warning">{t("settings.byondPagerWarning")}</div>
               <div className="byond-web-login">
                 {byondLoginState === "idle" && (
                   <>
-                    <button
-                      type="button"
-                      className="button"
-                      onClick={handleByondWebLogin}
-                    >
+                    <button type="button" className="button" onClick={handleByondWebLogin}>
                       {t("settings.loginToByond")}
                     </button>
                     <button
@@ -478,9 +461,7 @@ export const SettingsModal = ({
                   </>
                 )}
                 {byondLoginState === "loading" && (
-                  <p className="byond-login-status">
-                    {t("settings.byondWaiting")}
-                  </p>
+                  <p className="byond-login-status">{t("settings.byondWaiting")}</p>
                 )}
                 {byondLoginState === "success" && (
                   <p className="byond-login-status success">
@@ -518,7 +499,9 @@ export const SettingsModal = ({
                 mode="oidc"
                 currentMode={authMode}
                 name={t("settings.oidcAuth", { provider: config.strings.auth_provider_name })}
-                description={t("settings.oidcAuthDesc", { provider: config.strings.auth_provider_name })}
+                description={t("settings.oidcAuthDesc", {
+                  provider: config.strings.auth_provider_name,
+                })}
                 onChange={onAuthModeChange}
               />
             )}
@@ -553,9 +536,7 @@ export const SettingsModal = ({
         {devMode && (
           <div className="settings-section dev-section">
             <h3>{t("settings.devOptions")}</h3>
-            <p className="settings-description">
-              {t("settings.devDescription")}
-            </p>
+            <p className="settings-description">{t("settings.devDescription")}</p>
             <DevConnectSection />
           </div>
         )}

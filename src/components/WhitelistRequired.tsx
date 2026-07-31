@@ -1,11 +1,12 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { Server } from "../bindings";
-import { Modal, ModalContent } from "./Modal";
-import { LinkIconMap } from "./ServerItem";
 import { faGlobe } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
+
+import type { Server } from "../bindings";
 import { useSettingsStore } from "../stores";
+import { Modal, ModalContent } from "./Modal";
+import { LinkIconMap } from "./ServerItem";
 
 interface WhitelistModalProps {
   visible: boolean;
@@ -60,9 +61,7 @@ export const WhitelistRequiredModal = ({
               }}
               title={server.whitelisted.link.type}
             >
-              <FontAwesomeIcon
-                icon={LinkIconMap[server.whitelisted.link.type] ?? faGlobe}
-              />
+              <FontAwesomeIcon icon={LinkIconMap[server.whitelisted.link.type] ?? faGlobe} />
               <span>
                 {server.whitelisted.link.type.charAt(0).toUpperCase() +
                   server.whitelisted.link.type.slice(1)}
@@ -80,12 +79,7 @@ export const WhitelistRequiredModal = ({
           <label htmlFor={id}>{t("servers.whitelistConfirm")}</label>
         </div>
         <div style={{ marginTop: 12 }}>
-          <button
-            type="button"
-            className="button"
-            disabled={!isWhitelisted}
-            onClick={handleJoin}
-          >
+          <button type="button" className="button" disabled={!isWhitelisted} onClick={handleJoin}>
             {t("common.join")} {server.name}
           </button>
         </div>

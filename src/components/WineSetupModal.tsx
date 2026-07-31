@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import type { RenderingPipeline, WineStatus } from "../bindings";
 import type { WineSetupProgress } from "../types";
 import { Modal, ModalContent, ModalSpinner } from "./Modal";
@@ -15,13 +16,7 @@ interface WineSetupModalProps {
   onRetry: () => void;
 }
 
-const WineErrorContent = ({
-  status,
-  onRetry,
-}: {
-  status: WineStatus;
-  onRetry: () => void;
-}) => {
+const WineErrorContent = ({ status, onRetry }: { status: WineStatus; onRetry: () => void }) => {
   const { t } = useTranslation();
   return (
     <ModalContent>
@@ -35,11 +30,7 @@ const WineErrorContent = ({
   );
 };
 
-const SetupProgressContent = ({
-  progress,
-}: {
-  progress: WineSetupProgress | null;
-}) => {
+const SetupProgressContent = ({ progress }: { progress: WineSetupProgress | null }) => {
   const { t } = useTranslation();
   const displayProgress = progress?.progress ?? 0;
   const displayMessage = progress?.message ?? t("wine.setupStarting");
@@ -48,10 +39,7 @@ const SetupProgressContent = ({
     <ModalContent>
       <p>{displayMessage}</p>
       <div className="wine-progress-bar">
-        <div
-          className="wine-progress-fill"
-          style={{ width: `${displayProgress}%` }}
-        />
+        <div className="wine-progress-fill" style={{ width: `${displayProgress}%` }} />
       </div>
       <p className="wine-progress-percent">{displayProgress}%</p>
       <p>{t("wine.setupWarning")}</p>
@@ -114,13 +102,7 @@ const SetupRequiredContent = ({
   );
 };
 
-const SetupErrorContent = ({
-  error,
-  onRetry,
-}: {
-  error: string;
-  onRetry: () => void;
-}) => {
+const SetupErrorContent = ({ error, onRetry }: { error: string; onRetry: () => void }) => {
   const { t } = useTranslation();
   return (
     <ModalContent>
@@ -168,10 +150,7 @@ export const WineSetupModal = ({
 }: WineSetupModalProps) => {
   const { t } = useTranslation();
   const wineError = status.error || !status.installed;
-  const setupComplete =
-    status.prefix_initialized &&
-    !isSettingUp &&
-    progress?.stage === "complete";
+  const setupComplete = status.prefix_initialized && !isSettingUp && progress?.stage === "complete";
   const setupFailed = progress?.stage === "error";
   const canClose = !isSettingUp;
 
@@ -195,10 +174,7 @@ export const WineSetupModal = ({
       ) : isSettingUp ? (
         <SetupProgressContent progress={progress} />
       ) : setupFailed ? (
-        <SetupErrorContent
-          error={progress?.message ?? "Unknown error"}
-          onRetry={onRetry}
-        />
+        <SetupErrorContent error={progress?.message ?? "Unknown error"} onRetry={onRetry} />
       ) : setupComplete ? (
         <SetupCompleteContent onClose={onClose} />
       ) : (

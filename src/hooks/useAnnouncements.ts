@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
-import { commands, type HubAnnouncement } from "../bindings";
 import { listen } from "@tauri-apps/api/event";
+import { useCallback, useEffect, useState } from "react";
+
+import { commands, type HubAnnouncement } from "../bindings";
 
 export function useAnnouncements() {
   const [announcements, setAnnouncements] = useState<HubAnnouncement[]>([]);
