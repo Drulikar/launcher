@@ -151,7 +151,8 @@ impl DiscordState {
                     server_name,
                     player_count,
                     map_name,
-                    server_id: _,
+                    #[allow(unused)]
+                    server_id,
                 } => {
                     let details = match map_name {
                         Some(map) => format!("{player_count} players on {map}"),
@@ -167,8 +168,7 @@ impl DiscordState {
 
                     #[cfg(feature = "steam")]
                     if let Some(id) = server_id {
-                        let join_url =
-                            format!("{}//+connect%20{}", steam_launch_url(), id);
+                        let join_url = format!("{}//+connect%20{}", steam_launch_url(), id);
                         activity = activity.button(Button {
                             label: "Join Game".to_string(),
                             url: join_url,

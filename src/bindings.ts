@@ -263,6 +263,14 @@ async toggleFavoriteServer(serverId: string, favorited: boolean) : Promise<Resul
     else return { status: "error", error: e  as any };
 }
 },
+async trustDirectConnectAddress(address: string) : Promise<Result<AppSettings, CommandError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("trust_direct_connect_address", { address }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async setWhitelistedServer(uuid: string, state: boolean) : Promise<Result<AppSettings, CommandError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("set_whitelisted_server", { uuid, state }) };
@@ -274,14 +282,6 @@ async setWhitelistedServer(uuid: string, state: boolean) : Promise<Result<AppSet
 async setAcceptedTosServer(uuid: string, state: boolean) : Promise<Result<AppSettings, CommandError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("set_accepted_tos_server", { uuid, state }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async trustDirectConnectAddress(address: string) : Promise<Result<AppSettings, CommandError>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("trust_direct_connect_address", { address }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

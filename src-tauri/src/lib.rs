@@ -28,35 +28,46 @@ mod webview2;
 
 use tauri::{Emitter, Manager};
 
+use auth::background_refresh_task;
+use byond_login::ByondSessionState;
+
+#[cfg(feature = "steam")]
 use auth::{
-    background_refresh_task, get_access_token, get_auth_state, get_hub_oauth_providers,
-    hub_complete_2fa, hub_login, hub_oauth_login, logout, refresh_auth, start_login,
+    get_access_token, get_auth_state, get_hub_oauth_providers, hub_complete_2fa, hub_login,
+    hub_oauth_login, logout, refresh_auth, start_login,
 };
+#[cfg(feature = "steam")]
 use byond::{
     check_byond_version, connect_to_address, connect_to_server, connect_to_url,
     delete_byond_version, get_byond_username, install_byond_version, is_byond_pager_running,
     is_dev_mode, list_installed_byond_versions, resolve_direct_connect,
 };
+#[cfg(feature = "steam")]
 use byond_login::{
     byond_login_complete, byond_session_check_complete, cancel_byond_login,
     check_byond_web_session, clear_byond_session, get_byond_session_status, logout_byond_web,
-    start_byond_login, ByondSessionState,
+    start_byond_login,
 };
+#[cfg(feature = "steam")]
 use relays::{get_relays, get_selected_relay, set_selected_relay};
+#[cfg(feature = "steam")]
 use server_ping::get_server_pings;
+#[cfg(feature = "steam")]
 use servers::{get_announcements, get_servers};
+#[cfg(feature = "steam")]
 use settings::{
     get_settings, save_filter_settings, set_age_verified, set_auth_mode, set_last_played_server,
     set_last_read_announcement, set_last_view_mode, set_locale, set_rendering_pipeline,
     set_rich_presence, set_theme, set_accepted_tos_server, set_whitelisted_server,
     toggle_favorite_server, toggle_server_notifications, trust_direct_connect_address,
 };
-
+#[cfg(feature = "steam")]
 use singleplayer::{
     delete_singleplayer, get_latest_singleplayer_release, get_singleplayer_status,
     install_singleplayer, launch_singleplayer,
 };
 
+#[cfg(feature = "steam")]
 use config::get_launcher_config;
 
 #[cfg(target_os = "linux")]
@@ -171,73 +182,7 @@ fn open_url(url: String) -> error::CommandResult<()> {
 
 #[cfg(not(feature = "steam"))]
 pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
-    tauri_specta::Builder::<tauri::Wry>::new().commands(tauri_specta::collect_commands![
-        greet,
-        check_byond_version,
-        install_byond_version,
-        connect_to_server,
-        connect_to_url,
-        connect_to_address,
-        resolve_direct_connect,
-        is_dev_mode,
-        list_installed_byond_versions,
-        delete_byond_version,
-        is_byond_pager_running,
-        get_byond_username,
-        start_login,
-        hub_login,
-        hub_oauth_login,
-        hub_complete_2fa,
-        get_hub_oauth_providers,
-        logout,
-        get_auth_state,
-        refresh_auth,
-        get_access_token,
-        get_settings,
-        set_age_verified,
-        set_auth_mode,
-        set_theme,
-        set_locale,
-        toggle_server_notifications,
-        set_rendering_pipeline,
-        set_rich_presence,
-        set_last_played_server,
-        set_last_view_mode,
-        toggle_favorite_server,
-        trust_direct_connect_address,
-        set_whitelisted_server,
-        set_accepted_tos_server,
-        save_filter_settings,
-        set_last_read_announcement,
-        get_control_server_port,
-        kill_game,
-        get_servers,
-        get_announcements,
-        get_server_pings,
-        get_relays,
-        get_selected_relay,
-        set_selected_relay,
-        get_platform,
-        check_wine_status,
-        initialize_wine_prefix,
-        reset_wine_prefix,
-        open_url,
-        get_singleplayer_status,
-        get_latest_singleplayer_release,
-        install_singleplayer,
-        delete_singleplayer,
-        launch_singleplayer,
-        get_launcher_config,
-        start_byond_login,
-        cancel_byond_login,
-        byond_login_complete,
-        get_byond_session_status,
-        clear_byond_session,
-        logout_byond_web,
-        check_byond_web_session,
-        byond_session_check_complete,
-        get_initial_deep_links,
-    ])
+    tauri_specta::Builder::<tauri::Wry>::new()
 }
 
 #[cfg(feature = "steam")]
@@ -276,9 +221,9 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         set_last_played_server,
         set_last_view_mode,
         toggle_favorite_server,
+        trust_direct_connect_address,
         set_whitelisted_server,
         set_accepted_tos_server,
-        trust_direct_connect_address,
         save_filter_settings,
         set_last_read_announcement,
         get_control_server_port,
