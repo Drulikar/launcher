@@ -90,7 +90,7 @@ export const DirectConnectModal = ({ visible, onClose }: DirectConnectModalProps
       }
       const info = result.data;
       if (shouldSkipConfirmation(info, trimmed)) {
-        await doConnect(trimmed);
+        await doConnect(trimmed, info.server_id ?? undefined);
       } else {
         setConnectInfo(info);
       }
@@ -101,16 +101,16 @@ export const DirectConnectModal = ({ visible, onClose }: DirectConnectModalProps
     }
   };
 
-  const doConnect = async (addr: string) => {
+  const doConnect = async (addr: string, serverId?: string) => {
     handleClose();
-    await connectToAddress(addr, "DirectConnect");
+    await connectToAddress(addr, "DirectConnect", serverId);
   };
 
   const handleConfirm = async () => {
     if (trustAddress) {
       await useSettingsStore.getState().trustDirectConnectAddress(address.trim());
     }
-    await doConnect(address.trim());
+    await doConnect(address.trim(), connectInfo?.server_id ?? undefined);
   };
 
   const handleClose = () => {

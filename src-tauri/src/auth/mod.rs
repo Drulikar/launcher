@@ -1,3 +1,4 @@
+pub mod access;
 mod client;
 mod commands;
 pub mod hub_client;

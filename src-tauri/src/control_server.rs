@@ -619,7 +619,7 @@ async fn refresh_auth_token(
     #[allow(unused_variables)] app_handle: &tauri::AppHandle,
     mut params: ConnectionParams,
 ) -> Result<ConnectionParams, String> {
-    use crate::byond::AccessMethod;
+    use crate::auth::access::AccessMethod;
 
     match &params.access_method {
         AccessMethod::Steam(_) => {

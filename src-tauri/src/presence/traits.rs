@@ -10,7 +10,7 @@ pub struct ConnectionParams {
     pub version: String,
     pub host: String,
     pub port: String,
-    pub access_method: crate::byond::AccessMethod,
+    pub access_method: crate::auth::access::AccessMethod,
     pub server_name: String,
     pub map_name: Option<String>,
     pub server_id: Option<String>,

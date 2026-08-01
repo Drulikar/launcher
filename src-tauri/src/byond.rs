@@ -10,11 +10,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 
-use crate::auth::TokenStorage;
+use crate::auth::access::{resolve_access_method, AccessMethod, AuthError};
 use crate::error::{CommandError, CommandResult};
 use crate::relays::RelayState;
 use crate::servers::ServerState;
-use crate::settings::{load_settings, AuthMode};
 
 #[cfg(any(target_os = "windows", target_os = "linux"))]
 use crate::byond_login::{check_byond_web_session, start_byond_login};
@@ -27,41 +26,9 @@ use std::process::Command;
 #[cfg(target_os = "linux")]
 use crate::wine;
 
-#[cfg(feature = "steam")]
-use crate::steam::{authenticate_with_steam, SteamState};
 
 static CONNECTING: AtomicBool = AtomicBool::new(false);
 
-#[derive(Debug, Clone)]
-#[allow(dead_code)]
-pub enum AccessMethod {
-    HubTicket(String),
-    SessionToken { variant: String, token: String },
-    Steam(String),
-    Byond,
-    None,
-}
-
-impl AccessMethod {
-    #[cfg_attr(not(any(target_os = "windows", target_os = "linux")), allow(dead_code))]
-    fn is_byond(&self) -> bool {
-        matches!(self, Self::Byond)
-    }
-
-    fn url_params(&self) -> Option<(&str, &str)> {
-        match self {
-            Self::HubTicket(ticket) => Some(("auth_ticket", ticket)),
-            Self::SessionToken { variant, token } => Some((variant, token)),
-            Self::Steam(token) => Some(("steam", token)),
-            Self::Byond | Self::None => None,
-        }
-    }
-
-    fn should_exchange_hub_ticket(&self) -> bool {
-        matches!(self, Self::SessionToken { .. })
-            && crate::config::get_config().urls.hub_api.is_some()
-    }
-}
 
 pub struct ConnectionRequest {
     pub version: String,
@@ -292,12 +259,6 @@ pub struct ByondVersionInfo {
     pub last_used: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, specta::Type)]
-pub struct AuthError {
-    pub code: String,
-    pub message: String,
-    pub linking_url: Option<String>,
-}
 
 #[derive(Debug, Serialize, Deserialize, specta::Type)]
 pub struct ConnectionResult {
@@ -772,139 +733,6 @@ pub async fn connect(app: AppHandle, req: ConnectionRequest) -> CommandResult<Co
     result
 }
 
-#[allow(clippy::unused_async)] // Uses await when steam feature is enabled
-async fn maybe_exchange_hub_ticket(
-    method: AccessMethod,
-    server_id: &str,
-) -> Result<AccessMethod, ConnectionResult> {
-    if !method.should_exchange_hub_ticket() {
-        return Ok(method);
-    }
-
-    let AccessMethod::SessionToken { token, .. } = &method else {
-        return Ok(method);
-    };
-
-    let hwid = crate::control_server::generate_hwid();
-    match crate::auth::hub_client::HubClient::join(token, server_id, hwid.as_deref()).await {
-        Ok(ticket) => Ok(AccessMethod::HubTicket(ticket)),
-        Err(e) => Err(ConnectionResult {
-            success: false,
-            message: format!("Failed to get auth ticket: {e}"),
-            auth_error: Some(AuthError {
-                code: "ticket_error".to_string(),
-                message: format!("Failed to get auth ticket: {e}"),
-                linking_url: None,
-            }),
-        }),
-    }
-}
-
-fn resolve_auth_mode(preferred: AuthMode, server_auth_methods: &[String]) -> AuthMode {
-    let supports_hub = server_auth_methods.iter().any(|m| m == "hub");
-    let supports_byond = server_auth_methods.iter().any(|m| m == "byond");
-
-    match preferred {
-        AuthMode::Oidc => AuthMode::Oidc,
-        AuthMode::Steam => AuthMode::Steam,
-        AuthMode::Hub if supports_hub => AuthMode::Hub,
-        AuthMode::Hub | AuthMode::Byond if supports_byond => AuthMode::Byond,
-        _ if supports_hub => AuthMode::Hub,
-        _ => AuthMode::Byond,
-    }
-}
-
-async fn get_auth_for_connection(
-    app: &AppHandle,
-    auth_methods: &[String],
-) -> Result<AccessMethod, AuthError> {
-    let settings = load_settings(app).map_err(|e| AuthError {
-        code: "settings_error".to_string(),
-        message: e.to_string(),
-        linking_url: None,
-    })?;
-
-    let effective_mode = resolve_auth_mode(settings.auth_mode, auth_methods);
-
-    match effective_mode {
-        AuthMode::Oidc | AuthMode::Hub => {
-            let tokens = TokenStorage::get_tokens().map_err(|e| AuthError {
-                code: "token_error".to_string(),
-                message: e.to_string(),
-                linking_url: None,
-            })?;
-
-            match tokens {
-                Some(t) if !TokenStorage::is_expired() => {
-                    let config = crate::config::get_config();
-                    Ok(AccessMethod::SessionToken {
-                        variant: config.variant.to_string(),
-                        token: t.access_token,
-                    })
-                }
-                _ => {
-                    let config = crate::config::get_config();
-                    Err(AuthError {
-                        code: "auth_required".to_string(),
-                        message: config.strings.login_prompt.to_string(),
-                        linking_url: None,
-                    })
-                }
-            }
-        }
-        AuthMode::Steam => {
-            #[cfg(feature = "steam")]
-            {
-                let steam_state = app
-                    .try_state::<Arc<SteamState>>()
-                    .ok_or_else(|| AuthError {
-                        code: "steam_unavailable".to_string(),
-                        message: "Steam is not available".to_string(),
-                        linking_url: None,
-                    })?;
-
-                let result = authenticate_with_steam(&steam_state, false)
-                    .await
-                    .map_err(|e| AuthError {
-                        code: "steam_error".to_string(),
-                        message: e.to_string(),
-                        linking_url: None,
-                    })?;
-
-                if result.success {
-                    Ok(result
-                        .access_token
-                        .map(AccessMethod::Steam)
-                        .unwrap_or(AccessMethod::None))
-                } else if result.requires_linking {
-                    Err(AuthError {
-                        code: "steam_linking_required".to_string(),
-                        message: "Steam account linking required".to_string(),
-                        linking_url: result.linking_url,
-                    })
-                } else {
-                    Err(AuthError {
-                        code: "steam_auth_failed".to_string(),
-                        message: result
-                            .error
-                            .unwrap_or_else(|| "Steam authentication failed".to_string()),
-                        linking_url: None,
-                    })
-                }
-            }
-
-            #[cfg(not(feature = "steam"))]
-            {
-                Err(AuthError {
-                    code: "steam_unavailable".to_string(),
-                    message: "Steam support not compiled".to_string(),
-                    linking_url: None,
-                })
-            }
-        }
-        AuthMode::Byond => Ok(AccessMethod::Byond),
-    }
-}
 
 #[cfg(any(target_os = "windows", target_os = "linux"))]
 async fn ensure_byond_web_session(
@@ -988,22 +816,17 @@ pub async fn connect_to_server(
         (parts[0].to_string(), parts[1].to_string())
     };
 
-    let auth = match get_auth_for_connection(&app, &server.auth_methods).await {
-        Ok(auth) => auth,
-        Err(auth_error) => {
-            return Ok(ConnectionResult {
-                success: false,
-                message: auth_error.message.clone(),
-                auth_error: Some(auth_error),
-            });
-        }
-    };
-
-    let server_id_ref = server.id.as_str();
-    let access_method = match maybe_exchange_hub_ticket(auth, server_id_ref).await {
-        Ok(method) => method,
-        Err(result) => return Ok(result),
-    };
+    let access_method =
+        match resolve_access_method(&app, &server.auth_methods, Some(&server.id)).await {
+            Ok(method) => method,
+            Err(auth_error) => {
+                return Ok(ConnectionResult {
+                    success: false,
+                    message: auth_error.message.clone(),
+                    auth_error: Some(auth_error),
+                });
+            }
+        };
 
     let map_name = server.data.map(|d| d.map_name);
 
@@ -1324,6 +1147,7 @@ pub async fn resolve_direct_connect(address: String) -> CommandResult<DirectConn
 pub async fn connect_to_address(
     app: AppHandle,
     address: String,
+    server_id: Option<String>,
     source: Option<String>,
 ) -> CommandResult<ConnectionResult> {
     let source_str = source.as_deref().unwrap_or("unknown");
@@ -1340,49 +1164,37 @@ pub async fn connect_to_address(
     #[allow(clippy::indexing_slicing)]
     let (hostname, port_str) = (parts[0], parts[1]);
 
-    let port: u16 = port_str
-        .parse()
-        .map_err(|_| CommandError::InvalidInput(format!("Invalid port: {port_str}")))?;
-
-    // Resolve hostname to IP and look up server UUID via hub API
-    use std::net::ToSocketAddrs;
-    let resolved_ip = format!("{hostname}:{port}")
-        .to_socket_addrs()
-        .map_err(|e| CommandError::InvalidInput(format!("Failed to resolve hostname: {e}")))?
-        .next()
-        .ok_or_else(|| CommandError::InvalidInput(format!("Could not resolve: {hostname}")))?
-        .ip()
-        .to_string();
-
-    let server_id =
-        match crate::auth::hub_client::HubClient::resolve_server(&resolved_ip, port).await {
-            Ok(result) => Some(result.server_id),
-            Err(crate::auth::hub_client::HubAuthError::NotFound) => None,
-            Err(e) => {
-                return Ok(ConnectionResult {
-                    success: false,
-                    message: format!("Could not resolve server: {e}"),
-                    auth_error: None,
-                });
-            }
-        };
+    let server_id = match server_id {
+        Some(id) => Some(id),
+        None => {
+            let info = resolve_direct_connect(address.clone()).await.ok();
+            info.and_then(|i| i.server_id)
+        }
+    };
 
     let (access_method, server_id) = if let Some(server_id) = server_id {
-        let all_methods = vec!["hub".to_string(), "byond".to_string()];
-        let auth = match get_auth_for_connection(&app, &all_methods).await {
-            Ok(auth) => auth,
-            Err(auth_error) => {
-                return Ok(ConnectionResult {
-                    success: false,
-                    message: auth_error.message.clone(),
-                    auth_error: Some(auth_error),
-                });
-            }
+        let auth_methods = if let Some(state) = app.try_state::<Arc<ServerState>>() {
+            let servers = state.get_servers().await;
+            servers
+                .iter()
+                .find(|s| s.id == server_id)
+                .map(|s| s.auth_methods.clone())
+                .unwrap_or_default()
+        } else {
+            Vec::new()
         };
-        let method = match maybe_exchange_hub_ticket(auth, &server_id).await {
-            Ok(method) => method,
-            Err(result) => return Ok(result),
-        };
+
+        let method =
+            match resolve_access_method(&app, &auth_methods, Some(&server_id)).await {
+                Ok(method) => method,
+                Err(auth_error) => {
+                    return Ok(ConnectionResult {
+                        success: false,
+                        message: auth_error.message.clone(),
+                        auth_error: Some(auth_error),
+                    });
+                }
+            };
         (method, Some(server_id))
     } else {
         (AccessMethod::Byond, None)
@@ -1981,7 +1793,7 @@ pub async fn connect_to_url(
         let host = host.to_string();
         let port = port.to_string();
 
-        let auth = match get_auth_for_connection(&app, &[]).await {
+        let auth = match resolve_access_method(&app, &[], None).await {
             Ok(auth) => auth,
             Err(auth_error) => {
                 return Ok(ConnectionResult {

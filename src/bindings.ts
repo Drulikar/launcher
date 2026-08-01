@@ -41,9 +41,9 @@ async connectToUrl(url: string, version: string, source: string | null) : Promis
     else return { status: "error", error: e  as any };
 }
 },
-async connectToAddress(address: string, source: string | null) : Promise<Result<ConnectionResult, CommandError>> {
+async connectToAddress(address: string, serverId: string | null, source: string | null) : Promise<Result<ConnectionResult, CommandError>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("connect_to_address", { address, source }) };
+    return { status: "ok", data: await TAURI_INVOKE("connect_to_address", { address, serverId, source }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

@@ -79,8 +79,8 @@ export const useConnect = () => {
   );
 
   const connectToAddress = useCallback(
-    async (address: string, source: string): Promise<boolean> => {
-      const result = await commands.connectToAddress(address, source);
+    async (address: string, source: string, serverId?: string): Promise<boolean> => {
+      const result = await commands.connectToAddress(address, serverId ?? null, source);
       if (result.status === "error") {
         showError(formatCommandError(result.error));
         return false;
