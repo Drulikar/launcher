@@ -133,7 +133,7 @@ impl OidcClient {
 
         let expires_in = token_response
             .expires_in()
-            .unwrap_or(std::time::Duration::from_secs(3600));
+            .unwrap_or(std::time::Duration::from_hours(1));
         #[allow(clippy::cast_possible_wrap)]
         let expires_at = chrono::Utc::now()
             .timestamp()
@@ -184,7 +184,7 @@ impl OidcClient {
 
         let expires_in = token_response
             .expires_in()
-            .unwrap_or(std::time::Duration::from_secs(3600));
+            .unwrap_or(std::time::Duration::from_hours(1));
         #[allow(clippy::cast_possible_wrap)]
         let expires_at = chrono::Utc::now()
             .timestamp()

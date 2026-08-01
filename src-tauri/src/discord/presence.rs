@@ -151,7 +151,7 @@ impl DiscordState {
                     server_name,
                     player_count,
                     map_name,
-                    server_id,
+                    server_id: _,
                 } => {
                     let details = match map_name {
                         Some(map) => format!("{player_count} players on {map}"),

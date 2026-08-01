@@ -67,9 +67,7 @@ impl AuthState {
 }
 
 fn parse_hub_expiry(expire_time: &str) -> i64 {
-    chrono::DateTime::parse_from_rfc3339(expire_time)
-        .map(|dt| dt.timestamp())
-        .unwrap_or_else(|_| chrono::Utc::now().timestamp() + 86400 * 30)
+    chrono::DateTime::parse_from_rfc3339(expire_time).map_or_else(|_| chrono::Utc::now().timestamp() + 86400 * 30, |dt| dt.timestamp())
 }
 
 async fn fetch_user_info(token: &str) -> CommandResult<UserInfo> {
@@ -462,6 +460,6 @@ pub async fn background_refresh_task(app: AppHandle) {
             }
         }
 
-        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+        tokio::time::sleep(std::time::Duration::from_mins(1)).await;
     }
 }

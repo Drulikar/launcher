@@ -111,9 +111,7 @@ impl HubClient {
             }
         }
 
-        let message = serde_json::from_str::<ErrorResponse>(&body)
-            .map(|e| e.error)
-            .unwrap_or_else(|_| format!("HTTP {status}"));
+        let message = serde_json::from_str::<ErrorResponse>(&body).map_or_else(|_| format!("HTTP {status}"), |e| e.error);
 
         match status {
             s if s == reqwest::StatusCode::UNAUTHORIZED => Err(HubAuthError::InvalidCredentials),
@@ -288,9 +286,7 @@ impl HubClient {
         }
 
         let body_text = response.text().await.unwrap_or_default();
-        let message = serde_json::from_str::<ErrorResponse>(&body_text)
-            .map(|e| e.error)
-            .unwrap_or_else(|_| "OAuth exchange failed".to_string());
+        let message = serde_json::from_str::<ErrorResponse>(&body_text).map_or_else(|_| "OAuth exchange failed".to_string(), |e| e.error);
         Err(HubAuthError::Server(message))
     }
 

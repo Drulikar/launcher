@@ -652,7 +652,7 @@ async fn fetch_announcements_internal() -> CommandResult<Vec<HubAnnouncement>> {
         )));
     }
     let announcements: Vec<HubAnnouncement> = response.json().await.map_err(|e| {
-        CommandError::InvalidResponse(format!("Failed to parse announcements: {}", e))
+        CommandError::InvalidResponse(format!("Failed to parse announcements: {e}"))
     })?;
     tracing::info!("Fetched {} announcements", announcements.len());
     Ok(announcements)

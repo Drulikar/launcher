@@ -197,13 +197,11 @@ pub fn cleanup_old_versions(app: &AppHandle) {
     for (version, entry) in to_check {
         let is_old = match &entry.last_used {
             Some(ts) => chrono::DateTime::parse_from_rfc3339(ts)
-                .map(|t| t < cutoff)
-                .unwrap_or(true),
+                .map_or(true, |t| t < cutoff),
             None => {
                 // Never used - check installed_at instead
                 chrono::DateTime::parse_from_rfc3339(&entry.installed_at)
-                    .map(|t| t < cutoff)
-                    .unwrap_or(true)
+                    .map_or(true, |t| t < cutoff)
             }
         };
         if is_old {
@@ -1426,8 +1424,8 @@ async fn connect_impl(app: AppHandle, req: ConnectionRequest) -> CommandResult<C
         server_name,
         map_name,
         source,
-        server_id,
-        players,
+        server_id: _,
+        players: _,
     } = req;
 
     let version_info = install_byond_version(app.clone(), version.clone()).await?;

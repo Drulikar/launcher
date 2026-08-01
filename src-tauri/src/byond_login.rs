@@ -315,7 +315,7 @@ pub async fn start_byond_login(app: AppHandle) -> CommandResult<ByondLoginResult
     create_login_webview(&app, data_dir)?;
 
     // Wait for result with 5 minute timeout
-    match tokio::time::timeout(std::time::Duration::from_secs(300), rx).await {
+    match tokio::time::timeout(std::time::Duration::from_mins(5), rx).await {
         Ok(Ok(Some(username))) => {
             tracing::info!("BYOND login completed with username: {}", username);
             dismiss_login(&app);
@@ -403,8 +403,8 @@ fn create_login_webview(app: &AppHandle, data_dir: std::path::PathBuf) -> Comman
         .inner_size()
         .map_err(|e| CommandError::Webview(format!("Failed to get window size: {e}")))?;
     let scale = main_window.scale_factor().unwrap_or(1.0);
-    let win_w = window_size.width as f64 / scale;
-    let win_h = window_size.height as f64 / scale;
+    let win_w = f64::from(window_size.width) / scale;
+    let win_h = f64::from(window_size.height) / scale;
 
     let modal_x = (win_w - MODAL_WIDTH) / 2.0;
     let modal_y = TITLEBAR_HEIGHT + (win_h - TITLEBAR_HEIGHT - MODAL_HEIGHT) / 2.0;
