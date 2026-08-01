@@ -41,7 +41,7 @@ pub struct EngineRequirements {
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 pub struct Server {
-    pub id: Option<String>,
+    pub id: String,
     pub name: String,
     pub url: String,
     pub status: String,
@@ -254,7 +254,7 @@ impl HubApi {
         let address = connection_address.unwrap_or(hub.address);
 
         Server {
-            id: Some(hub.id),
+            id: hub.id,
             name,
             url: format!("byond://{address}"),
             status: "available".to_string(),
@@ -330,7 +330,13 @@ impl ServerApi for CmApi {
 }
 
 impl CmApi {
+    const NAMESPACE: uuid::Uuid = uuid::Uuid::from_bytes([
+        0xd4, 0x9a, 0x1e, 0x7b, 0x3c, 0x5f, 0x4a, 0x82, 0xb1, 0x0d, 0xe8, 0x6c, 0x21, 0xf3, 0x5a,
+        0x97,
+    ]);
+
     fn convert(cm: CmServer) -> Server {
+        let id = uuid::Uuid::new_v5(&Self::NAMESPACE, cm.url.as_bytes()).to_string();
         let players = cm.data.as_ref().and_then(|d| d.players).unwrap_or(0);
 
         let data = cm.data.as_ref().and_then(|d| {
@@ -354,7 +360,7 @@ impl CmApi {
         });
 
         Server {
-            id: None,
+            id,
             name: cm.name,
             url: format!("byond://{}", cm.url),
             status: cm.status,
@@ -533,19 +539,20 @@ async fn check_and_send_notifications(
     let mut previous_states = state.previous_states.write().await;
 
     for server in new_servers {
-        if !notification_servers.contains(&server.name) {
+        if !notification_servers.contains(&server.id) {
             continue;
         }
 
         let is_online = server.status == "available";
         let current_round_id = server.data.as_ref().map(|d| d.round_id);
 
-        let prev = previous_states
-            .entry(server.name.clone())
-            .or_insert_with(|| PreviousServerState {
-                was_online: is_online,
-                round_id: current_round_id,
-            });
+        let prev =
+            previous_states
+                .entry(server.id.clone())
+                .or_insert_with(|| PreviousServerState {
+                    was_online: is_online,
+                    round_id: current_round_id,
+                });
 
         let mut should_notify = false;
         let mut notification_title = String::new();
@@ -627,9 +634,13 @@ async fn fetch_announcements_internal() -> CommandResult<Vec<HubAnnouncement>> {
     let config = get_config();
     let hub_api = match std::env::var("SS13LAUNCHER_HUBAPI") {
         Ok(url) => url,
-        Err(_) => config.urls.hub_api.ok_or_else(|| CommandError::NotConfigured {
-            feature: "hub_api".into(),
-        })?.to_string(),
+        Err(_) => config
+            .urls
+            .hub_api
+            .ok_or_else(|| CommandError::NotConfigured {
+                feature: "hub_api".into(),
+            })?
+            .to_string(),
     };
     let url = format!("{}/announcements", hub_api.trim_end_matches('/'));
     tracing::info!("Fetching announcements from {}", url);
@@ -647,10 +658,7 @@ async fn fetch_announcements_internal() -> CommandResult<Vec<HubAnnouncement>> {
     Ok(announcements)
 }
 
-pub async fn announcement_fetch_background_task(
-    handle: AppHandle,
-    state: Arc<AnnouncementState>,
-) {
+pub async fn announcement_fetch_background_task(handle: AppHandle, state: Arc<AnnouncementState>) {
     loop {
         match fetch_announcements_internal().await {
             Ok(announcements) => {

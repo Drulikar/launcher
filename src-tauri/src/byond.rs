@@ -936,7 +936,7 @@ async fn ensure_byond_web_session(
 #[specta::specta]
 pub async fn connect_to_server(
     app: AppHandle,
-    server_name: String,
+    server_id: String,
     source: Option<String>,
 ) -> CommandResult<ConnectionResult> {
     let source_str = source.as_deref().unwrap_or("unknown");
@@ -947,8 +947,8 @@ pub async fn connect_to_server(
     let servers = server_state.get_servers().await;
     let server = servers
         .iter()
-        .find(|s| s.name == server_name)
-        .ok_or_else(|| CommandError::NotFound(format!("server '{server_name}'")))?
+        .find(|s| s.id == server_id)
+        .ok_or_else(|| CommandError::NotFound(format!("server '{server_id}'")))?
         .clone();
 
     let version = select_byond_version(server.engine.as_ref(), &app)?;
@@ -1001,13 +1001,15 @@ pub async fn connect_to_server(
         }
     };
 
-    let server_id_ref = server.id.as_deref().unwrap_or("");
+    let server_id_ref = server.id.as_str();
     let access_method = match maybe_exchange_hub_ticket(auth, server_id_ref).await {
         Ok(method) => method,
         Err(result) => return Ok(result),
     };
 
     let map_name = server.data.map(|d| d.map_name);
+
+    let server_name = server.name;
 
     tracing::info!(
         "[connect_to_server] source={} server={} version={} host={}",
@@ -1027,7 +1029,7 @@ pub async fn connect_to_server(
             server_name,
             map_name,
             source,
-            server_id: server.id,
+            server_id: Some(server_id),
             players: Some(server.players),
         },
     )
@@ -1574,6 +1576,7 @@ async fn connect_impl(app: AppHandle, req: ConnectionRequest) -> CommandResult<C
                         server_name.clone(),
                         map_name.clone(),
                         players.unwrap_or(0) as u32,
+                        server_id.clone(),
                         pid,
                     );
                 } else {
@@ -1641,6 +1644,7 @@ async fn connect_impl(app: AppHandle, req: ConnectionRequest) -> CommandResult<C
                     server_name.clone(),
                     map_name.clone(),
                     players.unwrap_or(0) as u32,
+                    server_id.clone(),
                     child,
                 );
             }

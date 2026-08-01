@@ -67,6 +67,7 @@ impl PresenceManager {
         server_name: String,
         map_name: Option<String>,
         player_count: u32,
+        server_id: Option<String>,
         process: Child,
     ) {
         tracing::info!("Starting game session on {}", server_name);
@@ -75,6 +76,7 @@ impl PresenceManager {
             *session = Some(GameSession {
                 server_name: server_name.clone(),
                 map_name: map_name.clone(),
+                server_id: server_id.clone(),
             });
         }
         {
@@ -86,6 +88,7 @@ impl PresenceManager {
             server_name,
             player_count,
             map_name,
+            server_id,
         });
     }
 
@@ -95,6 +98,7 @@ impl PresenceManager {
         server_name: String,
         map_name: Option<String>,
         player_count: u32,
+        server_id: Option<String>,
         pid: u32,
     ) {
         tracing::info!(
@@ -107,6 +111,7 @@ impl PresenceManager {
             *session = Some(GameSession {
                 server_name: server_name.clone(),
                 map_name: map_name.clone(),
+                server_id: server_id.clone(),
             });
         }
         {
@@ -118,6 +123,7 @@ impl PresenceManager {
             server_name,
             player_count,
             map_name,
+            server_id,
         });
     }
 
@@ -322,6 +328,7 @@ pub fn start_presence_background_task(
                             #[allow(clippy::cast_sign_loss)] // Player count is non-negative
                             player_count: player_count.unwrap_or(0) as u32,
                             map_name,
+                            server_id: session.server_id.clone(),
                         });
                     }
                 }

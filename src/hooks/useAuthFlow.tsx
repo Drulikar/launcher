@@ -9,7 +9,7 @@ import { useSteamLinking } from "./useSteamLinking";
 
 interface AuthFlowContextValue {
   onLoginRequired: () => void;
-  onSteamAuthRequired: (serverName?: string) => void;
+  onSteamAuthRequired: (serverId?: string) => void;
   onAutoConnectLinkingRequired: (linkingUrl: string | null) => void;
   handleLogout: () => void | Promise<void>;
   handleSteamLogout: () => void;

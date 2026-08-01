@@ -32,7 +32,7 @@ export function useSteamLinking() {
   );
 
   const [steamModal, setSteamModal] = useState<SteamModalView>(CLOSED);
-  const [pendingServerName, setPendingServerName] = useState<string | null>(null);
+  const [pendingServerId, setPendingServerId] = useState<string | null>(null);
 
   const handleSteamAuthenticate = useCallback(
     async (createAccountIfMissing: boolean) => {
@@ -48,9 +48,9 @@ export function useSteamLinking() {
       if (result?.success && result.access_token) {
         setSteamModal(CLOSED);
 
-        if (pendingServerName) {
-          const serverToConnect = pendingServerName;
-          setPendingServerName(null);
+        if (pendingServerId) {
+          const serverToConnect = pendingServerId;
+          setPendingServerId(null);
           connect(serverToConnect, "SteamAuthModal.afterAuth").catch((err) => {
             showError(err instanceof Error ? err.message : String(err));
           });
@@ -75,7 +75,7 @@ export function useSteamLinking() {
       });
       return result;
     },
-    [authenticateSteam, connect, pendingServerName, showError],
+    [authenticateSteam, connect, pendingServerId, showError],
   );
 
   const handleSteamModalClose = useCallback(async () => {
@@ -88,8 +88,8 @@ export function useSteamLinking() {
   }, [steamLogout]);
 
   const onSteamAuthRequired = useCallback(
-    (serverName?: string) => {
-      if (serverName) setPendingServerName(serverName);
+    (serverId?: string) => {
+      if (serverId) setPendingServerId(serverId);
       setSteamModal({ visible: true, state: "idle", error: undefined, linkingUrl: undefined });
       handleSteamAuthenticate(false);
     },

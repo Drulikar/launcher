@@ -40,13 +40,11 @@ export const LinkIconMap: Record<string, IconDefinition> = {
 interface ServerItemProps {
   server: Server;
   showHubStatus?: boolean;
-  autoConnecting?: boolean;
 }
 
 export const ServerItem = ({
   server,
   showHubStatus = false,
-  autoConnecting = false,
 }: ServerItemProps) => {
   const { t } = useTranslation();
   const [connecting, setConnecting] = useState(false);
@@ -64,7 +62,7 @@ export const ServerItem = ({
   const config = useConfigStore((s) => s.config);
   const ping = useServerStore((s) => s.pings[server.url] ?? null);
   const relaysReady = useServerStore((s) => s.relaysReady);
-  const notificationsEnabled = useSettingsStore((s) => s.notificationServers.has(server.name));
+  const notificationsEnabled = useSettingsStore((s) => s.notificationServers.has(server.id));
   const toggleServerNotifications = useSettingsStore((s) => s.toggleServerNotifications);
   const isFavorited = useSettingsStore((s) =>
     server.id ? s.favoriteServers.has(server.id) : false,
@@ -87,8 +85,8 @@ export const ServerItem = ({
   const handleConnect = async () => {
     setConnecting(true);
     try {
-      const success = await connect(server.name, "ServerItem.handleConnect");
-      if (success && server.id) {
+      const success = await connect(server.id, "ServerItem.handleConnect");
+      if (success) {
         useSettingsStore.getState().saveLastPlayedServer(server.id);
       }
     } catch (err) {
@@ -104,7 +102,7 @@ export const ServerItem = ({
 
   const handleToggleNotifications = async () => {
     try {
-      await toggleServerNotifications(server.name, !notificationsEnabled);
+      await toggleServerNotifications(server.id, !notificationsEnabled);
     } catch (err) {
       showError(err instanceof Error ? err.message : String(err));
     }
@@ -358,9 +356,9 @@ export const ServerItem = ({
                       ? () => setTosRequired(true)
                       : handleConnect
                 }
-                disabled={!canConnect || connecting || autoConnecting}
+                disabled={!canConnect || connecting}
               >
-                {connecting || autoConnecting ? (
+                {connecting ? (
                   "..."
                 ) : (
                   <>

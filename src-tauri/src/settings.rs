@@ -236,14 +236,14 @@ pub async fn set_locale(app: AppHandle, locale: Option<String>) -> CommandResult
 #[specta::specta]
 pub async fn toggle_server_notifications(
     app: AppHandle,
-    server_name: String,
+    server_id: String,
     enabled: bool,
 ) -> CommandResult<AppSettings> {
     let mut settings = load_settings(&app)?;
     if enabled {
-        settings.notification_servers.insert(server_name);
+        settings.notification_servers.insert(server_id);
     } else {
-        settings.notification_servers.remove(&server_name);
+        settings.notification_servers.remove(&server_id);
     }
     save_settings(&app, &settings)?;
 

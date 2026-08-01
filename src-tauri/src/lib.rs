@@ -1,5 +1,4 @@
 mod auth;
-mod autoconnect;
 mod byond;
 mod byond_login;
 pub mod config;
@@ -158,6 +157,14 @@ fn kill_game(
 
 #[tauri::command]
 #[specta::specta]
+fn get_initial_deep_links() -> Vec<String> {
+    std::env::args()
+        .filter(|arg| arg.starts_with("ss13://"))
+        .collect()
+}
+
+#[tauri::command]
+#[specta::specta]
 fn open_url(url: String) -> error::CommandResult<()> {
     open_url::open(&url)
 }
@@ -229,6 +236,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         logout_byond_web,
         check_byond_web_session,
         byond_session_check_complete,
+        get_initial_deep_links,
     ])
 }
 
@@ -305,6 +313,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         logout_byond_web,
         check_byond_web_session,
         byond_session_check_complete,
+        get_initial_deep_links,
     ])
 }
 
@@ -531,8 +540,6 @@ pub fn run() {
             });
 
             byond::cleanup_old_versions(&handle);
-
-            autoconnect::check_and_start_autoconnect(handle.clone());
 
             Ok(())
         })

@@ -11,7 +11,13 @@ impl SteamPresence {
         Self { client }
     }
 
-    fn set_playing_status(&self, server_name: &str, player_count: u32, map_name: Option<&str>) {
+    fn set_playing_status(
+        &self,
+        server_name: &str,
+        player_count: u32,
+        map_name: Option<&str>,
+        server_id: Option<&str>,
+    ) {
         tracing::debug!(
             "Setting Steam presence: Playing on {} ({} players, map: {:?})",
             server_name,
@@ -26,9 +32,9 @@ impl SteamPresence {
         };
         friends.set_rich_presence("status", Some(&status));
 
-        let encoded_server =
-            url::form_urlencoded::byte_serialize(server_name.as_bytes()).collect::<String>();
-        friends.set_rich_presence("connect", Some(&encoded_server));
+        if let Some(id) = server_id {
+            friends.set_rich_presence("connect", Some(&format!("+connect {id}")));
+        }
 
         friends.set_rich_presence("players", Some(&player_count.to_string()));
         friends.set_rich_presence("name", Some(server_name));
@@ -64,7 +70,13 @@ impl PresenceProvider for SteamPresence {
                 server_name,
                 player_count,
                 map_name,
-            } => self.set_playing_status(server_name, *player_count, map_name.as_deref()),
+                server_id,
+            } => self.set_playing_status(
+                server_name,
+                *player_count,
+                map_name.as_deref(),
+                server_id.as_deref(),
+            ),
             PresenceState::Disconnected => self.clear_presence(),
         }
     }

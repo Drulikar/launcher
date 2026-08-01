@@ -22,11 +22,11 @@ function dispatchAuthError(
   error: AuthError,
   handlers: {
     onLoginRequired: () => void;
-    onSteamAuthRequired: (serverName: string) => void;
+    onSteamAuthRequired: (serverId: string) => void;
     onByondAuthRequired: () => void;
     onError: (msg: string) => void;
   },
-  serverName?: string,
+  serverId?: string,
 ) {
   switch (error.code) {
     case "auth_required":
@@ -36,7 +36,7 @@ function dispatchAuthError(
       handlers.onByondAuthRequired();
       break;
     case "steam_linking_required":
-      handlers.onSteamAuthRequired(serverName ?? "");
+      handlers.onSteamAuthRequired(serverId ?? "");
       break;
     default:
       handlers.onError(error.message);
@@ -45,8 +45,8 @@ function dispatchAuthError(
 
 export function useRawConnect() {
   const connect = useCallback(
-    async (serverName: string, source: string): Promise<ConnectionResult> => {
-      return unwrap(await commands.connectToServer(serverName, source));
+    async (serverId: string, source: string): Promise<ConnectionResult> => {
+      return unwrap(await commands.connectToServer(serverId, source));
     },
     [],
   );
@@ -65,11 +65,11 @@ export const useConnect = () => {
   };
 
   const connect = useCallback(
-    async (serverName: string, source: string): Promise<boolean> => {
-      const result = unwrap(await commands.connectToServer(serverName, source));
+    async (serverId: string, source: string): Promise<boolean> => {
+      const result = unwrap(await commands.connectToServer(serverId, source));
       if (result.success) return true;
       if (result.auth_error) {
-        dispatchAuthError(result.auth_error, handlers, serverName);
+        dispatchAuthError(result.auth_error, handlers, serverId);
       } else {
         showError(result.message);
       }

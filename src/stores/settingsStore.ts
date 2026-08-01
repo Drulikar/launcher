@@ -48,8 +48,8 @@ interface SettingsStore {
   saveAgeVerified: () => Promise<void>;
   saveLocale: (locale: string | null) => Promise<void>;
   saveRenderingPipeline: (pipeline: RenderingPipeline) => Promise<void>;
-  toggleServerNotifications: (serverName: string, enabled: boolean) => Promise<void>;
-  isServerNotificationsEnabled: (serverName: string) => boolean;
+  toggleServerNotifications: (serverId: string, enabled: boolean) => Promise<void>;
+  isServerNotificationsEnabled: (serverId: string) => boolean;
   saveLastPlayedServer: (serverId: string) => Promise<void>;
   saveLastViewMode: (mode: string) => Promise<void>;
   toggleFavoriteServer: (serverId: string, favorited: boolean) => Promise<void>;
@@ -164,13 +164,13 @@ export const useSettingsStore = create<SettingsStore>()((set, get) => ({
     set({ renderingPipeline: pipeline });
   },
 
-  toggleServerNotifications: async (serverName: string, enabled: boolean) => {
-    const settings = unwrap(await commands.toggleServerNotifications(serverName, enabled));
+  toggleServerNotifications: async (serverId: string, enabled: boolean) => {
+    const settings = unwrap(await commands.toggleServerNotifications(serverId, enabled));
     set({ notificationServers: new Set(settings.notification_servers ?? []) });
   },
 
-  isServerNotificationsEnabled: (serverName: string) => {
-    return get().notificationServers.has(serverName);
+  isServerNotificationsEnabled: (serverId: string) => {
+    return get().notificationServers.has(serverId);
   },
 
   saveLastPlayedServer: async (serverId: string) => {

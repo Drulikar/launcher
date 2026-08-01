@@ -151,6 +151,7 @@ impl DiscordState {
                     server_name,
                     player_count,
                     map_name,
+                    server_id,
                 } => {
                     let details = match map_name {
                         Some(map) => format!("{player_count} players on {map}"),
@@ -164,13 +165,10 @@ impl DiscordState {
                         .details(details)
                         .assets(Assets::default().large("logo", Some(game_name)));
 
-                    // Only add join button when Steam feature is enabled (provides valid URL)
                     #[cfg(feature = "steam")]
-                    {
-                        let encoded_server =
-                            url::form_urlencoded::byte_serialize(server_name.as_bytes())
-                                .collect::<String>();
-                        let join_url = format!("{}//{}", steam_launch_url(), encoded_server);
+                    if let Some(id) = server_id {
+                        let join_url =
+                            format!("{}//+connect%20{}", steam_launch_url(), id);
                         activity = activity.button(Button {
                             label: "Join Game".to_string(),
                             url: join_url,

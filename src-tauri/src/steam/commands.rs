@@ -17,7 +17,7 @@ pub struct SteamUserInfo {
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 pub struct SteamLaunchOptions {
     pub raw: String,
-    pub server_name: Option<String>,
+    pub connect_target: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
@@ -151,19 +151,14 @@ pub async fn steam_authenticate(
     authenticate_with_steam(&steam_state, create_account_if_missing).await
 }
 
-fn parse_server_name(command_line: &str) -> Option<String> {
+fn parse_connect_target(command_line: &str) -> Option<String> {
     let trimmed = command_line.trim();
-    if trimmed.is_empty() {
+    let target = trimmed.strip_prefix("+connect ")?;
+    let target = target.trim();
+    if target.is_empty() {
         return None;
     }
-    let decoded = trimmed.replace('+', " ");
-    let decoded = percent_encoding::percent_decode_str(&decoded)
-        .decode_utf8_lossy()
-        .to_string();
-    if decoded.is_empty() {
-        return None;
-    }
-    Some(trimmed.to_string())
+    Some(target.to_string())
 }
 
 #[tauri::command]
@@ -172,7 +167,10 @@ pub async fn get_steam_launch_options(
     steam_state: State<'_, Arc<SteamState>>,
 ) -> CommandResult<SteamLaunchOptions> {
     let raw = steam_state.get_launch_command_line();
-    let server_name = parse_server_name(&raw);
+    let connect_target = parse_connect_target(&raw);
 
-    Ok(SteamLaunchOptions { raw, server_name })
+    Ok(SteamLaunchOptions {
+        raw,
+        connect_target,
+    })
 }

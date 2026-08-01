@@ -28,7 +28,6 @@ import {
   ErrorProvider,
   useAnnouncements,
   useAppBootstrap,
-  useAutoConnect,
   useDeepLink,
   useError,
   useGameConnection,
@@ -140,7 +139,6 @@ const AppContent = () => {
   const filters = useServerFilters(servers, config);
   const { showHubStatus, filteredServers } = filters;
 
-  const autoConnecting = useAutoConnect();
   useDeepLink();
 
   useEffect(() => {
@@ -323,7 +321,6 @@ const AppContent = () => {
                     key={server.url}
                     server={server}
                     showHubStatus={showHubStatus}
-                    autoConnecting={autoConnecting}
                   />
                 ))}
               </div>

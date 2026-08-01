@@ -2,6 +2,7 @@
 pub struct GameSession {
     pub server_name: String,
     pub map_name: Option<String>,
+    pub server_id: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -25,6 +26,7 @@ pub enum PresenceState {
         server_name: String,
         player_count: u32,
         map_name: Option<String>,
+        server_id: Option<String>,
     },
     #[allow(dead_code)]
     Disconnected,
