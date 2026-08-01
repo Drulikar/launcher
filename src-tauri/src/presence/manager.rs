@@ -300,7 +300,7 @@ pub fn start_presence_background_task(
                         app_handle.try_state::<Arc<ServerState>>()
                     {
                         let servers = server_state.get_servers().await;
-                        if let Some(server) = servers.iter().find(|s| s.name == session.server_name)
+                        if let Some(server) = session.server_id.as_ref().and_then(|id| servers.iter().find(|s| s.id == *id))
                         {
                             let player_count = server.data.as_ref().map(|d| d.players);
                             let map_name = server

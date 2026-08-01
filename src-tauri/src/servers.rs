@@ -458,7 +458,7 @@ pub async fn init_servers(
                 let is_online = server.status == "available";
                 let round_id = server.data.as_ref().map(|d| d.round_id);
                 previous_states.insert(
-                    server.name.clone(),
+                    server.id.clone(),
                     PreviousServerState {
                         was_online: is_online,
                         round_id,
