@@ -175,6 +175,7 @@ jobs:
 
   build-ss13:
     name: Build SS13 Launcher
+    needs: build-cm
     permissions:
       contents: write
       issues: write
