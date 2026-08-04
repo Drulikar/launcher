@@ -29,45 +29,33 @@ mod webview2;
 use tauri::{Emitter, Manager};
 
 use auth::background_refresh_task;
-use byond_login::ByondSessionState;
-
-#[cfg(feature = "steam")]
 use auth::{
     get_access_token, get_auth_state, get_hub_oauth_providers, hub_complete_2fa, hub_login,
     hub_oauth_login, logout, refresh_auth, start_login,
 };
-#[cfg(feature = "steam")]
 use byond::{
     check_byond_version, connect_to_address, connect_to_server, connect_to_url,
     delete_byond_version, get_byond_username, install_byond_version, is_byond_pager_running,
     is_dev_mode, list_installed_byond_versions, resolve_direct_connect,
 };
-#[cfg(feature = "steam")]
 use byond_login::{
     byond_login_complete, byond_session_check_complete, cancel_byond_login,
     check_byond_web_session, clear_byond_session, get_byond_session_status, logout_byond_web,
-    start_byond_login,
+    start_byond_login, ByondSessionState,
 };
-#[cfg(feature = "steam")]
+use config::get_launcher_config;
 use relays::{get_relays, get_selected_relay, set_selected_relay};
-#[cfg(feature = "steam")]
 use server_ping::get_server_pings;
-#[cfg(feature = "steam")]
 use servers::{get_announcements, get_servers};
-#[cfg(feature = "steam")]
 use settings::{
-    get_settings, set_auth_mode, set_locale, set_rendering_pipeline,
-    set_rich_presence, set_theme, set_accepted_tos_server, set_whitelisted_server,
-    toggle_favorite_server, toggle_server_notifications, trust_direct_connect_address,
+    get_settings, set_auth_mode, set_locale, set_rendering_pipeline, set_rich_presence, set_theme,
+    set_accepted_tos_server, set_whitelisted_server, toggle_favorite_server,
+    toggle_server_notifications, trust_direct_connect_address,
 };
-#[cfg(feature = "steam")]
 use singleplayer::{
     delete_singleplayer, get_latest_singleplayer_release, get_singleplayer_status,
     install_singleplayer, launch_singleplayer,
 };
-
-#[cfg(feature = "steam")]
-use config::get_launcher_config;
 
 #[cfg(target_os = "linux")]
 use wine::{check_wine_status, initialize_wine_prefix, reset_wine_prefix, WineStatus};
@@ -145,6 +133,55 @@ use steam::{
     steam_authenticate,
 };
 
+#[cfg(not(feature = "steam"))]
+mod steam_stubs {
+    use crate::error::{CommandError, CommandResult};
+
+    #[tauri::command]
+    #[specta::specta]
+    pub async fn hub_steam_login() -> CommandResult<crate::auth::AuthState> {
+        Err(CommandError::NotConfigured { feature: "steam".into() })
+    }
+    #[tauri::command]
+    #[specta::specta]
+    pub async fn get_steam_user_info() -> CommandResult<SteamUserInfo> {
+        Err(CommandError::NotConfigured { feature: "steam".into() })
+    }
+    #[tauri::command]
+    #[specta::specta]
+    pub async fn get_steam_auth_ticket() -> CommandResult<String> {
+        Err(CommandError::NotConfigured { feature: "steam".into() })
+    }
+    #[tauri::command]
+    #[specta::specta]
+    pub async fn cancel_steam_auth_ticket() -> CommandResult<()> {
+        Err(CommandError::NotConfigured { feature: "steam".into() })
+    }
+    #[tauri::command]
+    #[specta::specta]
+    pub async fn steam_authenticate(_create_account_if_missing: bool) -> CommandResult<SteamAuthResult> {
+        Err(CommandError::NotConfigured { feature: "steam".into() })
+    }
+    #[tauri::command]
+    #[specta::specta]
+    pub async fn get_steam_launch_options() -> CommandResult<SteamLaunchOptions> {
+        Err(CommandError::NotConfigured { feature: "steam".into() })
+    }
+
+    #[derive(serde::Serialize, serde::Deserialize, specta::Type)]
+    pub struct SteamUserInfo { pub steam_id: String, pub display_name: String }
+    #[derive(serde::Serialize, serde::Deserialize, specta::Type)]
+    pub struct SteamAuthResult { pub success: bool, pub user_exists: bool, pub access_token: Option<String>, pub requires_linking: bool, pub linking_url: Option<String>, pub error: Option<String> }
+    #[derive(serde::Serialize, serde::Deserialize, specta::Type)]
+    pub struct SteamLaunchOptions { pub raw: String, pub connect_target: Option<String> }
+}
+
+#[cfg(not(feature = "steam"))]
+use steam_stubs::{
+    hub_steam_login, get_steam_user_info, get_steam_auth_ticket,
+    cancel_steam_auth_ticket, steam_authenticate, get_steam_launch_options,
+};
+
 #[tauri::command]
 #[specta::specta]
 fn greet(name: &str) -> String {
@@ -179,12 +216,6 @@ fn open_url(url: String) -> error::CommandResult<()> {
     open_url::open(&url)
 }
 
-#[cfg(not(feature = "steam"))]
-pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
-    tauri_specta::Builder::<tauri::Wry>::new()
-}
-
-#[cfg(feature = "steam")]
 pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
     tauri_specta::Builder::<tauri::Wry>::new().commands(tauri_specta::collect_commands![
         greet,
