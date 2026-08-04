@@ -56,8 +56,7 @@ use server_ping::get_server_pings;
 use servers::{get_announcements, get_servers};
 #[cfg(feature = "steam")]
 use settings::{
-    get_settings, save_filter_settings, set_age_verified, set_auth_mode, set_last_played_server,
-    set_last_read_announcement, set_last_view_mode, set_locale, set_rendering_pipeline,
+    get_settings, set_auth_mode, set_locale, set_rendering_pipeline,
     set_rich_presence, set_theme, set_accepted_tos_server, set_whitelisted_server,
     toggle_favorite_server, toggle_server_notifications, trust_direct_connect_address,
 };
@@ -211,21 +210,16 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         refresh_auth,
         get_access_token,
         get_settings,
-        set_age_verified,
         set_auth_mode,
         set_theme,
         set_locale,
         toggle_server_notifications,
         set_rendering_pipeline,
         set_rich_presence,
-        set_last_played_server,
-        set_last_view_mode,
         toggle_favorite_server,
         trust_direct_connect_address,
         set_whitelisted_server,
         set_accepted_tos_server,
-        save_filter_settings,
-        set_last_read_announcement,
         get_control_server_port,
         kill_game,
         get_servers,
@@ -323,6 +317,7 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_zustand::init())
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             let deep_link_urls: Vec<String> = argv
                 .iter()

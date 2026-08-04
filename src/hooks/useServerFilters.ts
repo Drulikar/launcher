@@ -1,29 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { LauncherConfig, Server } from "../bindings";
-import { useSettingsStore, type StoredFilters } from "../stores/settingsStore";
+import { useUiStateStore } from "../stores/uiStateStore";
 
 export function useServerFilters(servers: Server[], config: LauncherConfig | null) {
-  const filters = useSettingsStore((s) => s.filters);
-  const saveFilters = useSettingsStore((s) => s.saveFilters);
+  const filters = useUiStateStore((s) => s.filters);
+  const updateFilters = useUiStateStore((s) => s.updateFilters);
 
   const searchQuery = filters.searchQuery;
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersRef = useRef<HTMLDivElement>(null);
 
-  const selectedTags = filters.tags;
+  const selectedTags = useMemo(() => new Set(filters.tags), [filters.tags]);
   const show18Plus = filters.show18Plus;
   const showOffline = filters.showOffline ?? config?.features.show_offline_servers ?? false;
   const showHubStatus = filters.showHubStatus;
-  const selectedRegions = filters.regions;
-  const selectedLanguages = filters.languages;
-
-  const updateFilters = useCallback(
-    (patch: Partial<StoredFilters>) => {
-      saveFilters({ ...filters, ...patch });
-    },
-    [filters, saveFilters],
-  );
+  const selectedRegions = useMemo(() => new Set(filters.regions), [filters.regions]);
+  const selectedLanguages = useMemo(() => new Set(filters.languages), [filters.languages]);
 
   const setShow18Plus = useCallback(
     (value: boolean) => {
@@ -68,9 +61,9 @@ export function useServerFilters(servers: Server[], config: LauncherConfig | nul
       const next = new Set(filters.tags);
       if (on) next.add(tag);
       else next.delete(tag);
-      saveFilters({ ...filters, tags: next });
+      updateFilters({ tags: Array.from(next) });
     },
-    [filters, saveFilters],
+    [filters.tags, updateFilters],
   );
 
   const toggleRegion = useCallback(
@@ -78,9 +71,9 @@ export function useServerFilters(servers: Server[], config: LauncherConfig | nul
       const next = new Set(filters.regions);
       if (on) next.add(region);
       else next.delete(region);
-      saveFilters({ ...filters, regions: next });
+      updateFilters({ regions: Array.from(next) });
     },
-    [filters, saveFilters],
+    [filters.regions, updateFilters],
   );
 
   const toggleLanguage = useCallback(
@@ -88,9 +81,9 @@ export function useServerFilters(servers: Server[], config: LauncherConfig | nul
       const next = new Set(filters.languages);
       if (on) next.add(language);
       else next.delete(language);
-      saveFilters({ ...filters, languages: next });
+      updateFilters({ languages: Array.from(next) });
     },
-    [filters, saveFilters],
+    [filters.languages, updateFilters],
   );
 
   const categories = useMemo(() => {
@@ -132,17 +125,16 @@ export function useServerFilters(servers: Server[], config: LauncherConfig | nul
     const availableRegions = new Set(regions);
     const availableLangs = new Set(languages);
 
-    const prunedTags = new Set([...filters.tags].filter((t) => availableTags.has(t)));
-    const prunedRegions = new Set([...filters.regions].filter((r) => availableRegions.has(r)));
-    const prunedLanguages = new Set([...filters.languages].filter((l) => availableLangs.has(l)));
+    const prunedTags = filters.tags.filter((t) => availableTags.has(t));
+    const prunedRegions = filters.regions.filter((r) => availableRegions.has(r));
+    const prunedLanguages = filters.languages.filter((l) => availableLangs.has(l));
 
     if (
-      prunedTags.size !== filters.tags.size ||
-      prunedRegions.size !== filters.regions.size ||
-      prunedLanguages.size !== filters.languages.size
+      prunedTags.length !== filters.tags.length ||
+      prunedRegions.length !== filters.regions.length ||
+      prunedLanguages.length !== filters.languages.length
     ) {
-      saveFilters({
-        ...filters,
+      updateFilters({
         tags: prunedTags,
         regions: prunedRegions,
         languages: prunedLanguages,

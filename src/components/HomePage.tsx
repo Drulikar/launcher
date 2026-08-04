@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import type { Server } from "../bindings";
 import { useSettingsStore } from "../stores";
+import { useUiStateStore } from "../stores/uiStateStore";
 import { ServerItem } from "./ServerItem";
 
 interface HomePageProps {
@@ -11,7 +12,7 @@ interface HomePageProps {
 
 export const HomePage = ({ servers }: HomePageProps) => {
   const { t } = useTranslation();
-  const lastPlayedServer = useSettingsStore((s) => s.lastPlayedServer);
+  const lastPlayedServer = useUiStateStore((s) => s.lastPlayedServer);
   const favoriteServers = useSettingsStore((s) => s.favoriteServers);
 
   const lastPlayed = useMemo(

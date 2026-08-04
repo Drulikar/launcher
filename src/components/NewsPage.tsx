@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 
 import type { HubAnnouncement } from "../bindings";
-import { useSettingsStore } from "../stores";
+import { useUiStateStore } from "../stores/uiStateStore";
 
 function truncateBody(body: string, maxLines = 3): string {
   return body.split("\n").slice(0, maxLines).join("\n");
@@ -18,11 +18,11 @@ export const NewsPage = ({ announcements }: NewsPageProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const news = announcements.filter((a) => a.kind === "announcement");
-  const saveLastRead = useSettingsStore((s) => s.saveLastReadAnnouncement);
+  const setLastReadAnnouncement = useUiStateStore((s) => s.setLastReadAnnouncement);
 
   useEffect(() => {
     if (news.length > 0) {
-      saveLastRead(news[0].id);
+      setLastReadAnnouncement(news[0].id);
     }
   }, [news[0]?.id]);
 

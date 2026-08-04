@@ -13,6 +13,7 @@
     "core:path:default",
     "updater:default",
     "process:allow-restart",
-    "deep-link:default"
+    "deep-link:default",
+    "zustand:default"
   ]
 }

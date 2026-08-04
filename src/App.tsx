@@ -41,6 +41,7 @@ import {
   useSettingsStore,
   useSteamStore,
 } from "./stores";
+import { useUiStateStore } from "./stores/uiStateStore";
 const AppContent = () => {
   const { t } = useTranslation();
   const { errors, dismissError, showError } = useError();
@@ -119,19 +120,19 @@ const AppContent = () => {
   const [directConnectVisible, setDirectConnectVisible] = useState(false);
 
   const showHome = config?.features.favorites ?? false;
-  const lastViewMode = useSettingsStore((s) => s.lastViewMode) as ViewMode | null;
-  const saveLastViewMode = useSettingsStore((s) => s.saveLastViewMode);
+  const lastViewMode = useUiStateStore((s) => s.lastViewMode) as ViewMode | null;
+  const setLastViewMode = useUiStateStore((s) => s.setLastViewMode);
 
   const defaultMode: ViewMode = showHome ? "home" : "browse";
   const viewMode =
     lastViewMode && (lastViewMode !== "home" || showHome) ? lastViewMode : defaultMode;
 
   const handleViewModeChange = (mode: ViewMode) => {
-    saveLastViewMode(mode);
+    setLastViewMode(mode);
   };
 
   const announcements = useAnnouncements();
-  const lastReadAnnouncement = useSettingsStore((s) => s.lastReadAnnouncement);
+  const lastReadAnnouncement = useUiStateStore((s) => s.lastReadAnnouncement);
   const newsAnnouncements = announcements.filter((a) => a.kind === "announcement");
   const hasUnreadNews =
     newsAnnouncements.length > 0 && newsAnnouncements[0].id !== lastReadAnnouncement;

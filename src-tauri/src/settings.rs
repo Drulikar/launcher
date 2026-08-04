@@ -37,7 +37,6 @@ pub enum RenderingPipeline {
     Wined3d,
 }
 
-#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 pub struct AppSettings {
     pub auth_mode: AuthMode,
@@ -46,31 +45,11 @@ pub struct AppSettings {
     #[serde(default)]
     pub notification_servers: HashSet<String>,
     #[serde(default)]
-    pub age_verified: bool,
-    #[serde(default)]
     pub locale: Option<String>,
     #[serde(default)]
     pub rendering_pipeline: RenderingPipeline,
     #[serde(default)]
-    pub last_played_server: Option<String>,
-    #[serde(default)]
     pub favorite_servers: HashSet<String>,
-    #[serde(default)]
-    pub filter_tags: HashSet<String>,
-    #[serde(default)]
-    pub filter_show_18_plus: bool,
-    #[serde(default)]
-    pub filter_show_offline: Option<bool>,
-    #[serde(default)]
-    pub filter_show_hub_status: bool,
-    #[serde(default)]
-    pub filter_regions: HashSet<String>,
-    #[serde(default)]
-    pub filter_languages: HashSet<String>,
-    #[serde(default)]
-    pub last_view_mode: Option<String>,
-    #[serde(default)]
-    pub search_query: Option<String>,
     #[serde(default)]
     pub trusted_direct_connect_addresses: HashSet<String>,
     #[serde(default = "default_true")]
@@ -79,8 +58,6 @@ pub struct AppSettings {
     pub whitelisted_servers: HashSet<String>,
     #[serde(default)]
     pub accepted_tos_servers: HashSet<String>,
-    #[serde(default)]
-    pub last_read_announcement: Option<String>,
 }
 
 fn default_true() -> bool {
@@ -116,24 +93,13 @@ impl Default for AppSettings {
             auth_mode,
             theme: default_theme,
             notification_servers: HashSet::new(),
-            age_verified: false,
             locale: None,
             rendering_pipeline: RenderingPipeline::default(),
-            last_played_server: None,
             favorite_servers: HashSet::new(),
-            filter_tags: HashSet::new(),
-            filter_show_18_plus: false,
-            filter_show_offline: None,
-            filter_show_hub_status: false,
-            filter_regions: HashSet::new(),
-            filter_languages: HashSet::new(),
-            last_view_mode: None,
-            search_query: None,
             trusted_direct_connect_addresses: HashSet::new(),
             rich_presence_enabled: true,
             whitelisted_servers: HashSet::new(),
             accepted_tos_servers: HashSet::new(),
-            last_read_announcement: None,
         }
     }
 }
@@ -216,15 +182,6 @@ pub async fn set_theme(app: AppHandle, theme: Theme) -> CommandResult<AppSetting
 
 #[tauri::command]
 #[specta::specta]
-pub async fn set_age_verified(app: AppHandle) -> CommandResult<AppSettings> {
-    let mut settings = load_settings(&app)?;
-    settings.age_verified = true;
-    save_settings(&app, &settings)?;
-    Ok(settings)
-}
-
-#[tauri::command]
-#[specta::specta]
 pub async fn set_locale(app: AppHandle, locale: Option<String>) -> CommandResult<AppSettings> {
     let mut settings = load_settings(&app)?;
     settings.locale = locale;
@@ -258,18 +215,6 @@ pub async fn set_rendering_pipeline(
 ) -> CommandResult<AppSettings> {
     let mut settings = load_settings(&app)?;
     settings.rendering_pipeline = pipeline;
-    save_settings(&app, &settings)?;
-    Ok(settings)
-}
-
-#[tauri::command]
-#[specta::specta]
-pub async fn set_last_played_server(
-    app: AppHandle,
-    server_id: String,
-) -> CommandResult<AppSettings> {
-    let mut settings = load_settings(&app)?;
-    settings.last_played_server = Some(server_id);
     save_settings(&app, &settings)?;
     Ok(settings)
 }
@@ -345,15 +290,6 @@ pub async fn set_accepted_tos_server(
 
 #[tauri::command]
 #[specta::specta]
-pub async fn set_last_view_mode(app: AppHandle, mode: String) -> CommandResult<AppSettings> {
-    let mut settings = load_settings(&app)?;
-    settings.last_view_mode = Some(mode);
-    save_settings(&app, &settings)?;
-    Ok(settings)
-}
-
-#[tauri::command]
-#[specta::specta]
 pub async fn set_rich_presence(app: AppHandle, enabled: bool) -> CommandResult<AppSettings> {
     let mut settings = load_settings(&app)?;
     settings.rich_presence_enabled = enabled;
@@ -366,43 +302,3 @@ pub async fn set_rich_presence(app: AppHandle, enabled: bool) -> CommandResult<A
     Ok(settings)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
-pub struct FilterSettings {
-    pub tags: Vec<String>,
-    pub show_18_plus: bool,
-    pub show_offline: Option<bool>,
-    pub show_hub_status: bool,
-    pub regions: Vec<String>,
-    pub languages: Vec<String>,
-    pub search_query: Option<String>,
-}
-
-#[tauri::command]
-#[specta::specta]
-pub async fn save_filter_settings(
-    app: AppHandle,
-    filters: FilterSettings,
-) -> CommandResult<AppSettings> {
-    let mut settings = load_settings(&app)?;
-    settings.filter_tags = filters.tags.into_iter().collect();
-    settings.filter_show_18_plus = filters.show_18_plus;
-    settings.filter_show_offline = filters.show_offline;
-    settings.filter_show_hub_status = filters.show_hub_status;
-    settings.filter_regions = filters.regions.into_iter().collect();
-    settings.filter_languages = filters.languages.into_iter().collect();
-    settings.search_query = filters.search_query;
-    save_settings(&app, &settings)?;
-    Ok(settings)
-}
-
-#[tauri::command]
-#[specta::specta]
-pub async fn set_last_read_announcement(
-    app: AppHandle,
-    announcement_id: String,
-) -> CommandResult<AppSettings> {
-    let mut settings = load_settings(&app)?;
-    settings.last_read_announcement = Some(announcement_id);
-    save_settings(&app, &settings)?;
-    Ok(settings)
-}

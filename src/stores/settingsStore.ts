@@ -3,7 +3,6 @@ import { create } from "zustand";
 import {
   type AppSettings,
   type AuthMode,
-  type FilterSettings,
   type RenderingPipeline,
   commands,
   type Theme,
@@ -11,47 +10,29 @@ import {
 import { setLocale } from "../i18n";
 import { unwrap } from "../lib/unwrap";
 
-export interface StoredFilters {
-  tags: Set<string>;
-  show18Plus: boolean;
-  showOffline: boolean | null;
-  showHubStatus: boolean;
-  regions: Set<string>;
-  languages: Set<string>;
-  searchQuery: string;
-}
-
 interface SettingsStore {
   loaded: boolean;
   authMode: AuthMode;
   theme: Theme;
   devMode: boolean;
   notificationServers: Set<string>;
-  ageVerified: boolean;
   locale: string | null;
   renderingPipeline: RenderingPipeline;
-  lastPlayedServer: string | null;
-  lastViewMode: string | null;
   favoriteServers: Set<string>;
   trustedAddresses: Set<string>;
   whitelistedServers: Set<string>;
   acceptedTosServers: Set<string>;
   richPresenceEnabled: boolean;
-  lastReadAnnouncement: string | null;
-  filters: StoredFilters;
 
   setAuthMode: (mode: AuthMode) => void;
   setTheme: (theme: Theme) => void;
   load: () => Promise<AppSettings | null>;
   saveAuthMode: (mode: AuthMode) => Promise<void>;
   saveTheme: (theme: Theme) => Promise<void>;
-  saveAgeVerified: () => Promise<void>;
   saveLocale: (locale: string | null) => Promise<void>;
   saveRenderingPipeline: (pipeline: RenderingPipeline) => Promise<void>;
   toggleServerNotifications: (serverId: string, enabled: boolean) => Promise<void>;
   isServerNotificationsEnabled: (serverId: string) => boolean;
-  saveLastPlayedServer: (serverId: string) => Promise<void>;
-  saveLastViewMode: (mode: string) => Promise<void>;
   toggleFavoriteServer: (serverId: string, favorited: boolean) => Promise<void>;
   isServerFavorited: (serverId: string) => boolean;
   trustDirectConnectAddress: (address: string) => Promise<void>;
@@ -61,8 +42,6 @@ interface SettingsStore {
   setAcceptedTos: (uuid: string, state: boolean) => Promise<void>;
   hasAcceptedTos: (uuid: string) => boolean;
   saveRichPresence: (enabled: boolean) => Promise<void>;
-  saveLastReadAnnouncement: (id: string) => Promise<void>;
-  saveFilters: (filters: StoredFilters) => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsStore>()((set, get) => ({
@@ -71,26 +50,13 @@ export const useSettingsStore = create<SettingsStore>()((set, get) => ({
   theme: "tgui",
   devMode: false,
   notificationServers: new Set<string>(),
-  ageVerified: false,
   locale: null,
   renderingPipeline: "dxvk",
-  lastPlayedServer: null,
-  lastViewMode: null,
   favoriteServers: new Set<string>(),
   trustedAddresses: new Set<string>(),
   richPresenceEnabled: true,
-  lastReadAnnouncement: null,
   whitelistedServers: new Set<string>(),
   acceptedTosServers: new Set<string>(),
-  filters: {
-    tags: new Set<string>(),
-    show18Plus: false,
-    showOffline: null,
-    showHubStatus: false,
-    regions: new Set<string>(),
-    languages: new Set<string>(),
-    searchQuery: "",
-  },
 
   setAuthMode: (authMode) => set({ authMode }),
   setTheme: (theme) => set({ theme }),
@@ -107,26 +73,13 @@ export const useSettingsStore = create<SettingsStore>()((set, get) => ({
         theme: settings.theme ?? "tgui",
         devMode,
         notificationServers: new Set(settings.notification_servers ?? []),
-        ageVerified: settings.age_verified ?? false,
         locale: settings.locale ?? null,
         renderingPipeline: settings.rendering_pipeline ?? "dxvk",
-        lastPlayedServer: settings.last_played_server ?? null,
-        lastViewMode: settings.last_view_mode ?? null,
         favoriteServers: new Set(settings.favorite_servers ?? []),
         trustedAddresses: new Set(settings.trusted_direct_connect_addresses ?? []),
         richPresenceEnabled: settings.rich_presence_enabled ?? true,
-        lastReadAnnouncement: settings.last_read_announcement ?? null,
         whitelistedServers: new Set(settings.whitelisted_servers ?? []),
         acceptedTosServers: new Set(settings.accepted_tos_servers ?? []),
-        filters: {
-          tags: new Set(settings.filter_tags ?? []),
-          show18Plus: settings.filter_show_18_plus ?? false,
-          showOffline: settings.filter_show_offline ?? null,
-          showHubStatus: settings.filter_show_hub_status ?? false,
-          regions: new Set(settings.filter_regions ?? []),
-          languages: new Set(settings.filter_languages ?? []),
-          searchQuery: settings.search_query ?? "",
-        },
       });
       if (settings.locale) {
         setLocale(settings.locale);
@@ -148,11 +101,6 @@ export const useSettingsStore = create<SettingsStore>()((set, get) => ({
     set({ theme });
   },
 
-  saveAgeVerified: async () => {
-    unwrap(await commands.setAgeVerified());
-    set({ ageVerified: true });
-  },
-
   saveLocale: async (locale: string | null) => {
     unwrap(await commands.setLocale(locale));
     setLocale(locale);
@@ -171,16 +119,6 @@ export const useSettingsStore = create<SettingsStore>()((set, get) => ({
 
   isServerNotificationsEnabled: (serverId: string) => {
     return get().notificationServers.has(serverId);
-  },
-
-  saveLastPlayedServer: async (serverId: string) => {
-    const settings = unwrap(await commands.setLastPlayedServer(serverId));
-    set({ lastPlayedServer: settings.last_played_server ?? null });
-  },
-
-  saveLastViewMode: async (mode: string) => {
-    unwrap(await commands.setLastViewMode(mode));
-    set({ lastViewMode: mode });
   },
 
   toggleFavoriteServer: async (serverId: string, favorited: boolean) => {
@@ -222,24 +160,5 @@ export const useSettingsStore = create<SettingsStore>()((set, get) => ({
   saveRichPresence: async (enabled: boolean) => {
     unwrap(await commands.setRichPresence(enabled));
     set({ richPresenceEnabled: enabled });
-  },
-
-  saveLastReadAnnouncement: async (id: string) => {
-    unwrap(await commands.setLastReadAnnouncement(id));
-    set({ lastReadAnnouncement: id });
-  },
-
-  saveFilters: async (filters: StoredFilters) => {
-    set({ filters });
-    const payload: FilterSettings = {
-      tags: Array.from(filters.tags),
-      show_18_plus: filters.show18Plus,
-      show_offline: filters.showOffline,
-      show_hub_status: filters.showHubStatus,
-      regions: Array.from(filters.regions),
-      languages: Array.from(filters.languages),
-      search_query: filters.searchQuery || null,
-    };
-    unwrap(await commands.saveFilterSettings(payload));
   },
 }));

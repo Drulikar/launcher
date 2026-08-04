@@ -15,7 +15,7 @@ function getLanguageDisplayName(code: string): string {
   } catch {}
   return code;
 }
-import { useSettingsStore } from "../stores";
+import { useUiStateStore } from "../stores/uiStateStore";
 import { AgeVerificationModal } from "./AgeVerificationModal";
 
 type FilterState = ReturnType<typeof useServerFilters>;
@@ -73,8 +73,8 @@ export const ServerFilterPanel = ({
   } = filters;
 
   const { t } = useTranslation();
-  const ageVerified = useSettingsStore((s) => s.ageVerified);
-  const saveAgeVerified = useSettingsStore((s) => s.saveAgeVerified);
+  const ageVerified = useUiStateStore((s) => s.ageVerified);
+  const setAgeVerified = useUiStateStore((s) => s.setAgeVerified);
   const [ageModalVisible, setAgeModalVisible] = useState(false);
 
   const languageLabels = useMemo(
@@ -91,7 +91,7 @@ export const ServerFilterPanel = ({
   };
 
   const handleAgeVerified = async () => {
-    await saveAgeVerified();
+    setAgeVerified();
     setAgeModalVisible(false);
     setShow18Plus(true);
   };

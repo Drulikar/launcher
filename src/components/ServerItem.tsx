@@ -23,6 +23,7 @@ import { commands } from "../bindings";
 import type { Server } from "../bindings";
 import { useConnect, useError } from "../hooks";
 import { useConfigStore, useServerStore, useSettingsStore } from "../stores";
+import { useUiStateStore } from "../stores/uiStateStore";
 import { formatDuration } from "../utils";
 import { Modal, ModalContent } from "./Modal";
 import { TermsOfServiceModal } from "./TermsOfServiceModal";
@@ -87,7 +88,7 @@ export const ServerItem = ({
     try {
       const success = await connect(server.id, "ServerItem.handleConnect");
       if (success) {
-        useSettingsStore.getState().saveLastPlayedServer(server.id);
+        useUiStateStore.getState().setLastPlayedServer(server.id);
       }
     } catch (err) {
       showError(err instanceof Error ? err.message : String(err));
