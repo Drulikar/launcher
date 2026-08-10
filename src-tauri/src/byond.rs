@@ -1793,16 +1793,7 @@ pub async fn connect_to_url(
         let host = host.to_string();
         let port = port.to_string();
 
-        let auth = match resolve_access_method(&app, &[], None).await {
-            Ok(auth) => auth,
-            Err(auth_error) => {
-                return Ok(ConnectionResult {
-                    success: false,
-                    message: auth_error.message.clone(),
-                    auth_error: Some(auth_error),
-                });
-            }
-        };
+        let auth = AccessMethod::None;
         tracing::info!(
             "[connect_to_url] dev mode connection to {}:{} version={}",
             host,
@@ -1825,6 +1816,5 @@ pub async fn connect_to_url(
             },
         )
         .await
-        .map_err(CommandError::Internal)
     }
 }
