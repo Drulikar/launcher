@@ -251,6 +251,7 @@ jobs:
           mkdir -p steam-build/linux
           cp -r AppDir/* steam-build/linux/
           rm -rf steam-build/linux/share/terminfo
+          rm -rf steam-build/linux/share/ri
 
           cp src-tauri/resources/libsteam_api.so steam-build/linux/shared/lib/
           cp -r src-tauri/webview2-runtime steam-build/linux/webview2-runtime
