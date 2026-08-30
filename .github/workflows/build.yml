@@ -110,14 +110,6 @@ jobs:
         if: matrix.platform == 'ubuntu-24.04' && steps.cache-tauri-cli.outputs.cache-hit != 'true'
         run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch feat/truly-portable-appimage --force
 
-      - name: Pin quick-sharun.sh (Linux)
-        if: matrix.platform == 'ubuntu-24.04'
-        run: |
-          mkdir -p ~/.cache/tauri
-          curl -fsSL "https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/0131d579b5f5a1633fb6372de991428755f6a437/useful-tools/quick-sharun.sh" \
-            -o ~/.cache/tauri/quick-sharun.sh
-          chmod +x ~/.cache/tauri/quick-sharun.sh
-
       - name: Configure SSH for private HWID crate
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -127,9 +119,10 @@ jobs:
         run: ./scripts/inject-hwid.sh
 
       - name: Write HWID signing key
+        shell: bash
         run: |
-          echo -n "${{ secrets.SS13HWID_SIGNING_KEY }}" | base64 -d > /tmp/hwid-signing-key
-          echo "SS13HWID_SIGNING_KEY_PATH=/tmp/hwid-signing-key" >> "$GITHUB_ENV"
+          echo -n "${{ secrets.SS13HWID_SIGNING_KEY }}" | base64 -d > "$RUNNER_TEMP/hwid-signing-key"
+          echo "SS13HWID_SIGNING_KEY_PATH=$RUNNER_TEMP/hwid-signing-key" >> "$GITHUB_ENV"
 
       - uses: tauri-apps/tauri-action@v0.6.1
         env:
@@ -290,14 +283,6 @@ jobs:
         if: matrix.platform == 'ubuntu-24.04' && steps.cache-tauri-cli.outputs.cache-hit != 'true'
         run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch feat/truly-portable-appimage --force
 
-      - name: Pin quick-sharun.sh (Linux)
-        if: matrix.platform == 'ubuntu-24.04'
-        run: |
-          mkdir -p ~/.cache/tauri
-          curl -fsSL "https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/0131d579b5f5a1633fb6372de991428755f6a437/useful-tools/quick-sharun.sh" \
-            -o ~/.cache/tauri/quick-sharun.sh
-          chmod +x ~/.cache/tauri/quick-sharun.sh
-
       - name: Configure SSH for private HWID crate
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -307,9 +292,10 @@ jobs:
         run: ./scripts/inject-hwid.sh
 
       - name: Write HWID signing key
+        shell: bash
         run: |
-          echo -n "${{ secrets.SS13HWID_SIGNING_KEY }}" | base64 -d > /tmp/hwid-signing-key
-          echo "SS13HWID_SIGNING_KEY_PATH=/tmp/hwid-signing-key" >> "$GITHUB_ENV"
+          echo -n "${{ secrets.SS13HWID_SIGNING_KEY }}" | base64 -d > "$RUNNER_TEMP/hwid-signing-key"
+          echo "SS13HWID_SIGNING_KEY_PATH=$RUNNER_TEMP/hwid-signing-key" >> "$GITHUB_ENV"
 
       - uses: tauri-apps/tauri-action@v0.6.1
         env:
