@@ -14,7 +14,7 @@
     {
       "label": "Dev (HWID)",
       "type": "shell",
-      "command": "./scripts/with-hwid.sh npm run tauri -- dev -- --features hwid",
+      "command": "bash ./scripts/with-hwid.sh npm run tauri -- dev -- --features hwid",
       "problemMatcher": []
     },
     {
@@ -26,7 +26,7 @@
     {
       "label": "Build (HWID)",
       "type": "shell",
-      "command": "./scripts/with-hwid.sh npm run tauri -- build -- --features hwid",
+      "command": "bash ./scripts/with-hwid.sh npm run tauri -- build -- --features hwid",
       "problemMatcher": []
     }
   ]
