@@ -11,8 +11,18 @@
       "label": "Dev",
       "type": "shell",
       "command": "npm run tauri -- dev",
-      "dependsOn": ["npm install"],
-      "problemMatcher": [],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "tauri-dev",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Watching"
+        },
+        "pattern": {
+          "regexp": "^$"
+        }
+      },
       "group": {
         "kind": "build",
         "isDefault": true
@@ -23,7 +33,18 @@
       "type": "shell",
       "command": "bash ./scripts/with-hwid.sh npm run tauri -- dev -- --features hwid",
       "dependsOn": ["npm install"],
-      "problemMatcher": []
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "tauri-dev-hwid",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Watching"
+        },
+        "pattern": {
+          "regexp": "^$"
+        }
+      }
     },
     {
       "label": "Build",
