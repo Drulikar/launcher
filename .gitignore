@@ -25,5 +25,6 @@ dist-ssr
 *.sln
 *.sw?
 
+*.bak
 resources/
 src-tauri/webview2-runtime/

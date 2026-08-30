@@ -14,7 +14,7 @@
     {
       "label": "Dev (HWID)",
       "type": "shell",
-      "command": "bash -c 'cp src-tauri/Cargo.lock src-tauri/Cargo.lock.bak && ./scripts/inject-hwid.sh && trap \"git checkout crates/hwid/ && mv src-tauri/Cargo.lock.bak src-tauri/Cargo.lock\" EXIT && npm run tauri -- dev -- --features hwid'",
+      "command": "./scripts/with-hwid.sh npm run tauri -- dev -- --features hwid",
       "problemMatcher": []
     },
     {
@@ -26,7 +26,7 @@
     {
       "label": "Build (HWID)",
       "type": "shell",
-      "command": "bash -c 'cp src-tauri/Cargo.lock src-tauri/Cargo.lock.bak && ./scripts/inject-hwid.sh && trap \"git checkout crates/hwid/ && mv src-tauri/Cargo.lock.bak src-tauri/Cargo.lock\" EXIT && npm run tauri -- build -- --features hwid'",
+      "command": "./scripts/with-hwid.sh npm run tauri -- build -- --features hwid",
       "problemMatcher": []
     }
   ]
