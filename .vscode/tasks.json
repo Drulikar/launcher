@@ -2,9 +2,16 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "npm install",
+      "type": "shell",
+      "command": "npm install",
+      "problemMatcher": []
+    },
+    {
       "label": "Dev",
       "type": "shell",
       "command": "npm run tauri -- dev",
+      "dependsOn": ["npm install"],
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -15,18 +22,21 @@
       "label": "Dev (HWID)",
       "type": "shell",
       "command": "bash ./scripts/with-hwid.sh npm run tauri -- dev -- --features hwid",
+      "dependsOn": ["npm install"],
       "problemMatcher": []
     },
     {
       "label": "Build",
       "type": "shell",
       "command": "npm run tauri -- build",
+      "dependsOn": ["npm install"],
       "problemMatcher": []
     },
     {
       "label": "Build (HWID)",
       "type": "shell",
       "command": "bash ./scripts/with-hwid.sh npm run tauri -- build -- --features hwid",
+      "dependsOn": ["npm install"],
       "problemMatcher": []
     }
   ]
