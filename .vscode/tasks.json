@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Dev",
+      "type": "shell",
+      "command": "npm run tauri -- dev",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Dev (HWID)",
+      "type": "shell",
+      "command": "bash -c 'cp src-tauri/Cargo.lock src-tauri/Cargo.lock.bak && ./scripts/inject-hwid.sh && trap \"git checkout crates/hwid/ && mv src-tauri/Cargo.lock.bak src-tauri/Cargo.lock\" EXIT && npm run tauri -- dev -- --features hwid'",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build",
+      "type": "shell",
+      "command": "npm run tauri -- build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build (HWID)",
+      "type": "shell",
+      "command": "bash -c 'cp src-tauri/Cargo.lock src-tauri/Cargo.lock.bak && ./scripts/inject-hwid.sh && trap \"git checkout crates/hwid/ && mv src-tauri/Cargo.lock.bak src-tauri/Cargo.lock\" EXIT && npm run tauri -- build -- --features hwid'",
+      "problemMatcher": []
+    }
+  ]
+}
