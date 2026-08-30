@@ -13,6 +13,22 @@ use tauri::{
 };
 use tokio::sync::oneshot;
 
+/// Host used for navigation-based IPC from external BYOND webviews.
+/// External-origin webviews can't use Tauri's invoke() (ACL blocks it),
+/// so init scripts navigate to this fake host and on_navigation intercepts it.
+const IPC_HOST: &str = "ipc.localhost";
+
+/// Parse a navigation URL as an IPC callback if it matches our IPC host.
+/// Returns `Some((path, params))` for IPC URLs, `None` for real navigations.
+fn parse_ipc_url(url: &url::Url) -> Option<(String, std::collections::HashMap<String, String>)> {
+    if url.host_str() != Some(IPC_HOST) {
+        return None;
+    }
+    let path = url.path().to_string();
+    let params: std::collections::HashMap<String, String> = url.query_pairs().into_owned().collect();
+    Some((path, params))
+}
+
 /// Get user agent string for BYOND webviews.
 /// BYOND requires a Windows user agent to show the `.join_link` element.
 fn get_user_agent() -> String {
@@ -84,10 +100,8 @@ impl ByondLoginState {
     }
 }
 
-/// Called from the login webview's JS when login is complete
-#[tauri::command]
-#[specta::specta]
-pub fn byond_login_complete(app: AppHandle, username: Option<String>) {
+/// Core login-complete logic, callable from on_navigation IPC or the Tauri command.
+fn handle_login_complete(app: &AppHandle, username: Option<String>) {
     tracing::info!("BYOND login complete - username: {:?}", username);
 
     if let Some(ref name) = username {
@@ -102,6 +116,13 @@ pub fn byond_login_complete(app: AppHandle, username: Option<String>) {
     if let Some(state) = app.try_state::<ByondLoginState>() {
         state.complete(username);
     }
+}
+
+/// Called from the login webview's JS when login is complete
+#[tauri::command]
+#[specta::specta]
+pub fn byond_login_complete(app: AppHandle, username: Option<String>) {
+    handle_login_complete(&app, username);
 }
 
 /// Get current BYOND session status
@@ -247,7 +268,7 @@ fn login_init_script() -> &'static str {
                 const username = extractUsername();
 
                 if (username) {
-                    window.__TAURI_INTERNALS__.invoke('byond_login_complete', { username });
+                    window.location.href = 'https://ipc.localhost/login-complete?username=' + encodeURIComponent(username);
                     return;
                 }
 
@@ -385,6 +406,16 @@ fn create_login_webview(app: &AppHandle, data_dir: std::path::PathBuf) -> Comman
         }
     })
     .on_navigation(move |url| {
+        // Intercept IPC navigation from the init script
+        if let Some((path, params)) = parse_ipc_url(url) {
+            if path == "/login-complete" {
+                let username = params.get("username").cloned();
+                tracing::info!("BYOND login complete (via nav IPC): username={:?}", username);
+                handle_login_complete(&app_for_nav, username);
+            }
+            return false; // cancel the navigation
+        }
+
         if url.scheme() != "https" && url.scheme() != "http" {
             return true;
         }
@@ -450,6 +481,16 @@ fn create_login_webview(app: &AppHandle, data_dir: std::path::PathBuf) -> Comman
         }
     })
     .on_navigation(move |url| {
+        // Intercept IPC navigation from the init script
+        if let Some((path, params)) = parse_ipc_url(url) {
+            if path == "/login-complete" {
+                let username = params.get("username").cloned();
+                tracing::info!("BYOND login complete (via nav IPC): username={:?}", username);
+                handle_login_complete(&app_for_nav, username);
+            }
+            return false; // cancel the navigation
+        }
+
         if url.scheme() != "https" && url.scheme() != "http" {
             return true;
         }
@@ -509,11 +550,9 @@ impl SessionCheckState {
     }
 }
 
-/// Called from JS when session check is complete
-#[tauri::command]
-#[specta::specta]
-pub fn byond_session_check_complete(
-    app: AppHandle,
+/// Core session-check-complete logic, callable from on_navigation IPC or the Tauri command.
+fn handle_session_check_complete(
+    app: &AppHandle,
     web_id: Option<String>,
     username: Option<String>,
 ) {
@@ -547,6 +586,25 @@ pub fn byond_session_check_complete(
     }
 }
 
+/// Called from JS in BYOND webviews to relay console-style logs back to Rust
+#[tauri::command]
+#[specta::specta]
+pub fn byond_webview_log(level: String, message: String) {
+    match level.as_str() {
+        "error" => tracing::error!("[byond_webview_js] {}", message),
+        "warn" => tracing::warn!("[byond_webview_js] {}", message),
+        "debug" => tracing::debug!("[byond_webview_js] {}", message),
+        _ => tracing::info!("[byond_webview_js] {}", message),
+    }
+}
+
+/// Called from JS when session check is complete
+#[tauri::command]
+#[specta::specta]
+pub fn byond_session_check_complete(app: AppHandle, web_id: Option<String>, username: Option<String>) {
+    handle_session_check_complete(&app, web_id, username);
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn check_byond_web_session(app: AppHandle) -> CommandResult<ByondSessionCheck> {
@@ -577,11 +635,16 @@ pub async fn check_byond_web_session(app: AppHandle) -> CommandResult<ByondSessi
         app.manage(check_state);
     }
 
-    let init_script = r"
+    let init_script = r#"
         if (window.location.hostname === 'www.byond.com' || window.location.hostname === 'byond.com') {
             const CHECK_INTERVAL = 500;
             const MAX_RETRIES = 60;
             let retries = 0;
+
+            function sendResult(webId, username) {
+                var params = 'webId=' + encodeURIComponent(webId || '') + '&username=' + encodeURIComponent(username || '');
+                window.location.href = 'https://ipc.localhost/session-check-complete?' + params;
+            }
 
             function isCloudflareChallenge() {
                 const title = document.title || '';
@@ -589,22 +652,24 @@ pub async fn check_byond_web_session(app: AppHandle) -> CommandResult<ByondSessi
             }
 
             function checkSession() {
+                retries++;
+
                 if (isCloudflareChallenge()) {
-                    if (retries++ < MAX_RETRIES) {
+                    if (retries < MAX_RETRIES) {
                         setTimeout(checkSession, CHECK_INTERVAL);
                     } else {
-                        window.__TAURI_INTERNALS__.invoke('byond_session_check_complete', { webId: null, username: null });
+                        sendResult(null, null);
                     }
                     return;
                 }
 
                 const joinLink = document.querySelector('.join_link');
                 if (!joinLink) {
-                    if (retries++ < MAX_RETRIES) {
+                    if (retries < MAX_RETRIES) {
                         setTimeout(checkSession, CHECK_INTERVAL);
                         return;
                     }
-                    window.__TAURI_INTERNALS__.invoke('byond_session_check_complete', { webId: null, username: null });
+                    sendResult(null, null);
                     return;
                 }
 
@@ -619,7 +684,7 @@ pub async fn check_byond_web_session(app: AppHandle) -> CommandResult<ByondSessi
                     username = text.split('\n')[0].trim();
                 }
 
-                window.__TAURI_INTERNALS__.invoke('byond_session_check_complete', { webId, username });
+                sendResult(webId, username);
             }
 
             if (document.readyState === 'complete') {
@@ -628,7 +693,7 @@ pub async fn check_byond_web_session(app: AppHandle) -> CommandResult<ByondSessi
                 window.addEventListener('load', checkSession);
             }
         }
-    ";
+    "#;
 
     let data_dir = app
         .path()
@@ -642,6 +707,7 @@ pub async fn check_byond_web_session(app: AppHandle) -> CommandResult<ByondSessi
     tracing::debug!("Data directory: {:?}", data_dir);
 
     let app_for_events = app.clone();
+    let app_for_nav = app.clone();
 
     let window = WebviewWindowBuilder::new(
         &app,
@@ -666,6 +732,22 @@ pub async fn check_byond_web_session(app: AppHandle) -> CommandResult<ByondSessi
         if payload.event() == PageLoadEvent::Finished {
             tracing::info!("Session check page finished loading: {}", payload.url());
         }
+    })
+    .on_navigation(move |url| {
+        if let Some((path, params)) = parse_ipc_url(url) {
+            if path == "/session-check-complete" {
+                let web_id = params.get("webId").cloned().filter(|s| !s.is_empty());
+                let username = params.get("username").cloned().filter(|s| !s.is_empty());
+                tracing::info!(
+                    "Session check complete (via nav IPC): web_id={:?}, username={:?}",
+                    web_id,
+                    username
+                );
+                handle_session_check_complete(&app_for_nav, web_id, username);
+            }
+            return false;
+        }
+        true
     })
     .build()
     .map_err(|e| CommandError::Webview(format!("Failed to create webview: {e}")))?;

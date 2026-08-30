@@ -40,7 +40,7 @@ use byond::{
     is_dev_mode, list_installed_byond_versions, resolve_direct_connect,
 };
 use byond_login::{
-    byond_login_complete, byond_session_check_complete, cancel_byond_login,
+    byond_login_complete, byond_session_check_complete, byond_webview_log, cancel_byond_login,
     check_byond_web_session, clear_byond_session, get_byond_session_status, logout_byond_web,
     start_byond_login, ByondSessionState,
 };
@@ -284,6 +284,7 @@ pub fn build_specta() -> tauri_specta::Builder<tauri::Wry> {
         logout_byond_web,
         check_byond_web_session,
         byond_session_check_complete,
+        byond_webview_log,
         get_initial_deep_links,
     ])
 }
