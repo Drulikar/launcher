@@ -1,6 +1,6 @@
 [package]
 name = "SS13_Launcher"
-version = "0.22.2"
+version = "0.24.0"
 description = "Space Station 13 server browser and launcher"
 authors = ["hry-gh"]
 edition = "2021"
@@ -12,7 +12,7 @@ default = []
 dev = []
 discord_invites = []
 steam = ["steamworks"]
-cm_ss13 = []  # CM-SS13 specific variant
+cm_ss13 = [] # CM-SS13 specific variant
 hwid = ["launcher-hwid"]
 
 [lib]
